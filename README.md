@@ -1,6 +1,18 @@
-# Club Hub - Hackathon Project
+### Club Hub - Hackathon Project
 
 A comprehensive web application for managing college clubs and communities. This project connects students with clubs and allows club leaders to manage their organizations effectively.
+
+## ✨ Features
+
+- **User Authentication**: Secure signup and login with JWT.
+- **Club Management**: Create, update, and delete clubs.
+- **Membership System**: Users can request to join clubs; admins can approve/reject requests.
+- **Role Management**: Assign roles to members (e.g., President, Member).
+- **Event Management**: Create and manage club events with posters and details.
+- **GitHub Integration**: Connect GitHub accounts to showcase repositories in join requests.
+- **Admin Dashboard**: Dedicated dashboard for club owners to manage requests and events.
+- **Interactive UI**: Modern, responsive interface built with React and Lucide icons.
+- **Media Upload**: Support for uploading club logos and event posters.
 
 ## 🚀 Tech Stack
 
@@ -84,6 +96,12 @@ Create a `.env` file in the `server/` directory and add your database URL:
 DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
 SECRET_KEY=your-secret-key
 JWT_SECRET_KEY=your-jwt-secret-key
+
+# OAuth Credentials (Optional but recommended)
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+LINKEDIN_CLIENT_ID=your-linkedin-client-id
+LINKEDIN_CLIENT_SECRET=your-linkedin-client-secret
 ```
 
 Run Database Migrations:

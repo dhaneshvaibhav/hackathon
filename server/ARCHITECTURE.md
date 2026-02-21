@@ -13,25 +13,37 @@ server/
 │   ├── models/              # Database Models (SQLAlchemy)
 │   │   ├── user.py          # User Model
 │   │   ├── club.py          # Club Model
-│   │   └── event.py         # Event Model
+│   │   ├── event.py         # Event Model
+│   │   ├── announcement.py  # Announcement Model
+│   │   ├── club_request.py  # Club Join Request Model
+│   │   └── oauth.py         # OAuth Account Model
 │   ├── routes/              # API Route Definitions (Blueprints)
-    │   │   ├── auth.py          # Authentication Routes
-    │   │   ├── user.py          # User Management Routes
-    │   │   ├── club.py          # Club Management Routes
-    │   │   ├── event.py         # Event Management Routes
-    │   │   └── main.py          # General Routes
-    │   ├── controllers/         # Request Handling & Validation
-    │   │   ├── auth_controller.py
-    │   │   ├── user_controller.py
-    │   │   ├── club_controller.py
-    │   │   ├── event_controller.py
-    │   │   └── main_controller.py
-    │   ├── services/            # Core Business Logic & DB Interactions
-    │   │   ├── auth_service.py
-    │   │   ├── user_service.py
-    │   │   ├── club_service.py
-    │   │   ├── event_service.py
-    │   │   └── main_service.py
+│   │   ├── auth.py          # Authentication Routes
+│   │   ├── user.py          # User Management Routes
+│   │   ├── club.py          # Club Management Routes
+│   │   ├── event.py         # Event Management Routes
+│   │   ├── announcement.py  # Announcement Routes
+│   │   ├── oauth.py         # OAuth Routes
+│   │   ├── upload.py        # File Upload Routes
+│   │   └── main.py          # General Routes
+│   ├── controllers/         # Request Handling & Validation
+│   │   ├── auth_controller.py
+│   │   ├── user_controller.py
+│   │   ├── club_controller.py
+│   │   ├── event_controller.py
+│   │   ├── announcement_controller.py
+│   │   ├── oauth_controller.py
+│   │   ├── upload_controller.py
+│   │   └── main_controller.py
+│   ├── services/            # Core Business Logic & DB Interactions
+│   │   ├── auth_service.py
+│   │   ├── user_service.py
+│   │   ├── club_service.py
+│   │   ├── event_service.py
+│   │   ├── announcement_service.py
+│   │   ├── oauth_service.py
+│   │   ├── media_service.py
+│   │   └── main_service.py
 │   └── utils/               # Helper Functions
 │       └── auth_utils.py    # Password Hashing, Token Generation
 ├── migrations/              # Database Migrations (Alembic)
