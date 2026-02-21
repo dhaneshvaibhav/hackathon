@@ -1,23 +1,44 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getRequestDetails, handleClubRequest } from '../functions/club';
-import { ArrowLeft, User, Github, Check, X } from 'lucide-react';
+import { getRequestDetails, handleClubRequest, getClubRequestRepos } from '../functions/club';
+import { ArrowLeft, User, Github, Check, X, Star, GitBranch, Code } from 'lucide-react';
 import './Dashboard.css';
 
 const RequestDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [request, setRequest] = useState(null);
+    const [repos, setRepos] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadingRepos, setLoadingRepos] = useState(false);
     const [error, setError] = useState('');
     const [processing, setProcessing] = useState(false);
 
     useEffect(() => {
+        const fetchRepos = async (token) => {
+            setLoadingRepos(true);
+            try {
+                const data = await getClubRequestRepos(token, id);
+                if (data && Array.isArray(data)) {
+                    setRepos(data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch repos", err);
+            } finally {
+                setLoadingRepos(false);
+            }
+        };
+
         const fetchRequest = async () => {
             const token = localStorage.getItem('token');
             try {
                 const data = await getRequestDetails(token, id);
                 setRequest(data);
+                
+                // Fetch repos if user has github
+                if (data.user_details.oauth_accounts.find(acc => acc.provider === 'github')) {
+                    fetchRepos(token);
+                }
             } catch (err) {
                 setError('Failed to fetch request details');
                 console.error(err);
@@ -43,6 +64,15 @@ const RequestDetails = () => {
         } finally {
             setProcessing(false);
         }
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
     };
 
     if (loading) return (
@@ -149,26 +179,72 @@ const RequestDetails = () => {
                         {githubAccount ? (
                             <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                                    <img 
-                                        src={githubAccount.meta_data.avatar_url} 
-                                        alt="GitHub Avatar" 
-                                        style={{ width: '64px', height: '64px', borderRadius: '50%' }}
-                                    />
+                                    {githubAccount.meta_data?.avatar_url && (
+                                        <img 
+                                            src={githubAccount.meta_data.avatar_url} 
+                                            alt="GitHub Avatar" 
+                                            style={{ width: '64px', height: '64px', borderRadius: '50%' }}
+                                        />
+                                    )}
                                     <div>
                                         <h3 style={{ margin: 0 }}>
-                                            <a href={githubAccount.meta_data.html_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'none' }}>
-                                                {githubAccount.meta_data.login}
+                                            <a href={githubAccount.meta_data?.html_url || '#'} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'none' }}>
+                                                {githubAccount.meta_data?.login || 'GitHub User'}
                                             </a>
                                         </h3>
                                         <p style={{ margin: 0, color: 'var(--text-muted)' }}>ID: {githubAccount.provider_user_id}</p>
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
                                     <StatCard label="Public Repos" value={githubAccount.meta_data?.public_repos || 0} />
                                     <StatCard label="Followers" value={githubAccount.meta_data?.followers || 0} />
                                     <StatCard label="Following" value={githubAccount.meta_data?.following || 0} />
                                     <StatCard label="Public Gists" value={githubAccount.meta_data?.public_gists || 0} />
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                                    <DetailRow label="Name" value={githubAccount.meta_data?.name} />
+                                    <DetailRow label="Company" value={githubAccount.meta_data?.company} />
+                                    <DetailRow label="Blog" value={githubAccount.meta_data?.blog} isLink={true} />
+                                    <DetailRow label="Location" value={githubAccount.meta_data?.location} />
+                                    <DetailRow label="Email" value={githubAccount.meta_data?.email} />
+                                    <DetailRow label="Twitter" value={githubAccount.meta_data?.twitter_username} />
+                                    <DetailRow label="Hireable" value={githubAccount.meta_data?.hireable ? 'Yes' : 'No'} />
+                                    <DetailRow label="Type" value={githubAccount.meta_data?.type} />
+                                    <DetailRow label="Site Admin" value={githubAccount.meta_data?.site_admin ? 'Yes' : 'No'} />
+                                    <DetailRow label="Joined GitHub" value={formatDate(githubAccount.meta_data?.created_at)} />
+                                    <DetailRow label="Last Updated" value={formatDate(githubAccount.meta_data?.updated_at)} />
+                                </div>
+
+                                {githubAccount.meta_data?.bio && (
+                                    <div style={{ marginTop: '1.5rem' }}>
+                                        <strong style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>GitHub Bio</strong>
+                                        <p style={{ margin: 0, background: '#f1f5f9', padding: '0.75rem', borderRadius: '6px', fontSize: '0.95rem' }}>
+                                            {githubAccount.meta_data.bio}
+                                        </p>
+                                    </div>
+                                )}
+
+                                <div style={{ marginTop: '2rem', borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>
+                                    <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--text-main)' }}>
+                                        Repositories
+                                    </h3>
+                                    
+                                    {loadingRepos ? (
+                                        <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                            <div className="spinner" style={{ width: '30px', height: '30px', margin: '0 auto', border: '3px solid #e5e7eb', borderTop: '3px solid #4f46e5' }}></div>
+                                            <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Loading repositories...</p>
+                                        </div>
+                                    ) : repos.length > 0 ? (
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+                                            {repos.map(repo => (
+                                                <RepoCard key={repo.id} repo={repo} />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>No public repositories found.</p>
+                                    )}
                                 </div>
                             </div>
                         ) : (
@@ -232,6 +308,67 @@ const StatCard = ({ label, value }) => (
     <div style={{ background: 'white', padding: '1rem', borderRadius: '6px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
         <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--primary)' }}>{value}</div>
         <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{label}</div>
+    </div>
+);
+
+const DetailRow = ({ label, value, isLink = false }) => {
+    if (!value) return null;
+    return (
+        <div style={{ padding: '0.5rem', borderBottom: '1px solid #eee' }}>
+            <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</span>
+            {isLink ? (
+                <a href={value.startsWith('http') ? value : `https://${value}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: '500', textDecoration: 'none' }}>
+                    {value}
+                </a>
+            ) : (
+                <span style={{ fontWeight: '500', color: 'var(--text-main)' }}>{value}</span>
+            )}
+        </div>
+    );
+};
+
+const RepoCard = ({ repo }) => (
+    <div style={{ 
+        padding: '1rem', 
+        border: '1px solid #e2e8f0', 
+        borderRadius: '6px', 
+        background: 'white',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.5rem',
+        height: '100%',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+    }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <a href={repo.html_url} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 'bold', color: 'var(--primary)', textDecoration: 'none', fontSize: '1rem', wordBreak: 'break-all' }}>
+                {repo.name}
+            </a>
+            <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)', flexShrink: 0 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} title="Stars">
+                    <Star size={14} /> {repo.stargazers_count}
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} title="Forks">
+                    <GitBranch size={14} /> {repo.forks_count}
+                </span>
+            </div>
+        </div>
+        
+        {repo.description && (
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#4b5563', flex: 1, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }} title={repo.description}>
+                {repo.description}
+            </p>
+        )}
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '0.5rem', borderTop: '1px solid #f1f5f9' }}>
+            {repo.language ? (
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <Code size={14} /> {repo.language}
+                </span>
+            ) : <span></span>}
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                {new Date(repo.updated_at).toLocaleDateString()}
+            </span>
+        </div>
     </div>
 );
 

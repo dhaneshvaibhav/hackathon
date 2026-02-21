@@ -3,6 +3,7 @@ from app.models.club_request import ClubRequest
 from app.models.user import User
 from app.extensions import db
 from sqlalchemy.orm.attributes import flag_modified
+import requests
 
 class ClubService:
     @staticmethod
@@ -224,3 +225,52 @@ class ClubService:
     @staticmethod
     def get_user_requests(user_id):
         return ClubRequest.query.filter_by(user_id=int(user_id)).all()
+
+    @staticmethod
+    def get_user_github_repos(request_id, admin_id):
+        admin_id = int(admin_id)
+        req = ClubRequest.query.get(request_id)
+        if not req:
+            return None, "Request not found"
+        
+        club = req.club
+        if club.owner_id != admin_id:
+             return None, "Unauthorized"
+
+        user = req.user
+        # Find github account
+        github_oauth = None
+        for acc in user.oauth_accounts:
+            if acc.provider == 'github':
+                github_oauth = acc
+                break
+        
+        if not github_oauth:
+            return None, "User has not connected GitHub"
+            
+        access_token = github_oauth.access_token
+        # Use the repos_url from metadata if available
+        repos_url = None
+        if github_oauth.meta_data:
+            repos_url = github_oauth.meta_data.get('repos_url')
+            
+        if not repos_url:
+            # Fallback using user endpoint which lists authenticated user's repos
+            # But we are using their token, so it should work
+            repos_url = "https://api.github.com/user/repos"
+        
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Accept': 'application/vnd.github.v3+json'
+        }
+        
+        try:
+            # Add per_page=100 to get more repos, sort by updated
+            response = requests.get(repos_url, headers=headers, params={'per_page': 100, 'sort': 'updated'})
+            
+            if response.status_code == 200:
+                return response.json(), None
+            else:
+                return None, f"GitHub API error: {response.status_code}"
+        except Exception as e:
+            return None, str(e)
