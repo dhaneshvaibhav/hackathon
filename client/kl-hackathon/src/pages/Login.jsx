@@ -42,6 +42,9 @@ const Login = () => {
             // Redirect based on role
             if (data.user.is_admin) {
                 navigate('/admin');
+            } else if (!data.user.bio) {
+                // Redirect to profile for first-time setup (if bio is missing)
+                navigate('/profile?onboarding=true');
             } else {
                 navigate('/dashboard');
             }

@@ -8,8 +8,10 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
+
 import Clubs from './pages/Clubs';
 import Events from './pages/Events';
+
 import './App.css';
 
 const PublicLayout = () => {
@@ -33,8 +35,10 @@ function App() {
         
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+
           <Route path="/clubs" element={<Clubs />} />
           <Route path="/events" element={<Events />} />
+
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
