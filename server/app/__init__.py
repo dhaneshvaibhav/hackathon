@@ -1,6 +1,6 @@
 from flask import Flask
 from app.config import config
-from app.extensions import db, cors
+from app.extensions import db, cors, migrate
 
 def create_app(config_name='default'):
     app = Flask(__name__)
@@ -11,6 +11,10 @@ def create_app(config_name='default'):
     # Initialize extensions
     db.init_app(app)
     cors.init_app(app)
+    migrate.init_app(app, db)
+    
+    # Import models to ensure they are registered with SQLAlchemy
+    from app.models.user import User
     
     # Register blueprints
     from app.routes.main import main_bp
