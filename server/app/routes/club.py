@@ -4,6 +4,8 @@ from app.controllers.club_controller import (
     get_all_clubs as get_all_clubs_controller,
     get_managed_clubs as get_managed_clubs_controller,
     create_club as create_club_controller,
+    update_club as update_club_controller,
+    delete_club as delete_club_controller,
     request_join as request_join_controller,
     get_requests as get_requests_controller,
     handle_request as handle_request_controller,
@@ -25,6 +27,16 @@ def get_managed_clubs():
 @jwt_required()
 def create_club():
     return create_club_controller()
+
+@club_bp.route('/<int:club_id>', methods=['PUT'])
+@jwt_required()
+def update_club(club_id):
+    return update_club_controller(club_id)
+
+@club_bp.route('/<int:club_id>', methods=['DELETE'])
+@jwt_required()
+def delete_club(club_id):
+    return delete_club_controller(club_id)
 
 @club_bp.route('/<int:club_id>/join', methods=['POST'])
 @jwt_required()

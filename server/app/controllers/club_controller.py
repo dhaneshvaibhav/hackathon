@@ -25,6 +25,32 @@ def create_club():
         
     return jsonify(club.to_dict()), 201
 
+def update_club(club_id):
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({'error': 'No input data provided'}), 400
+        
+    club, error = ClubService.update_club(club_id, data, current_user_id)
+    
+    if error:
+        status_code = 403 if "Unauthorized" in error else 400
+        return jsonify({'error': error}), status_code
+        
+    return jsonify(club.to_dict()), 200
+
+def delete_club(club_id):
+    current_user_id = get_jwt_identity()
+    
+    success, error = ClubService.delete_club(club_id, current_user_id)
+    
+    if error:
+        status_code = 403 if "Unauthorized" in error else 400
+        return jsonify({'error': error}), status_code
+        
+    return jsonify({'message': 'Club deleted successfully'}), 200
+
 def request_join(club_id):
     current_user_id = get_jwt_identity()
     data = request.get_json() or {}

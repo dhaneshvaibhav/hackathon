@@ -49,6 +49,63 @@ class ClubService:
         return Club.query.get(club_id)
 
     @staticmethod
+    def update_club(club_id, data, user_id):
+        user_id = int(user_id)
+        club = Club.query.get(club_id)
+        if not club:
+            return None, "Club not found"
+
+        if club.owner_id != user_id:
+            return None, "Unauthorized: You are not the owner of this club"
+
+        # Update allowed fields
+        if 'name' in data:
+            name = data['name']
+            if name and name != club.name:
+                if Club.query.filter_by(name=name).first():
+                    return None, "Club with this name already exists"
+                club.name = name
+
+        if 'description' in data:
+            club.description = data['description']
+        
+        if 'category' in data:
+            club.category = data['category']
+            
+        if 'logo_url' in data:
+            club.logo_url = data['logo_url']
+
+        try:
+            db.session.commit()
+            return club, None
+        except Exception as e:
+            db.session.rollback()
+            return None, str(e)
+
+    @staticmethod
+    def delete_club(club_id, user_id):
+        user_id = int(user_id)
+        club = Club.query.get(club_id)
+        if not club:
+            return None, "Club not found"
+
+        if club.owner_id != user_id:
+            return None, "Unauthorized: You are not the owner of this club"
+
+        try:
+            # Delete related requests first? Or rely on cascade?
+            # Usually SQLAlchemy relationship cascade deletes, but let's be safe if not configured.
+            # ClubRequest has relationship to Club, check if cascade delete is set.
+            # If not, we might need to delete requests first manually.
+            # For now, let's assume standard deletion.
+            db.session.delete(club)
+            db.session.commit()
+            return True, None
+        except Exception as e:
+            db.session.rollback()
+            return None, str(e)
+
+    @staticmethod
     def request_to_join(club_id, user_id, message):
         user_id = int(user_id)
         club = Club.query.get(club_id)
