@@ -459,28 +459,6 @@ const Profile = () => {
                     </section>
                 )}
 
-                {/* Become Creator Section */}
-                {!user?.is_admin && !isEditing && (
-                    <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', marginBottom: '2rem', border: '1px solid #E2E8F0' }}>
-                         <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--primary)' }}>Creator Status</h2>
-                         <div style={{ padding: '1.5rem', backgroundColor: '#EFF6FF', borderRadius: '8px', border: '1px solid #BFDBFE' }}>
-                            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: 0, color: '#1E40AF', fontSize: '1.1rem' }}>
-                                <Shield size={20} /> Become a Creator
-                            </h3>
-                            <p style={{ color: '#1E3A8A', marginBottom: '1rem', lineHeight: '1.5', fontSize: '0.95rem' }}>
-                                Upgrade your account to create and manage your own clubs. Join the community of leaders!
-                            </p>
-                            <button
-                                onClick={handleBecomeCreator}
-                                className="btn btn-primary"
-                                style={{ backgroundColor: '#2563EB', borderColor: '#2563EB' }}
-                            >
-                                Upgrade to Creator
-                            </button>
-                        </div>
-                    </section>
-                )}
-
                 {/* Danger Zone */}
                 {!isEditing && (
                     <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
