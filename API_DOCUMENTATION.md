@@ -215,7 +215,30 @@ Base URL: `http://localhost:5000`
   "logo_url": "https://example.com/logo.png",
   "category": "Tech",
   "owner_id": 5,
-  "members": []
+  "members": [
+    {
+      "user_id": 5,
+      "role": "owner"
+    }
+  ],
+  "members_details": [
+    {
+      "user_id": 5,
+      "name": "Praneeth",
+      "email": "praneeth@college.edu",
+      "role": "owner",
+      "profile_picture": "https://github.com/..."
+    }
+  ],
+  "events": [
+    {
+      "id": 2,
+      "title": "Tech Talk",
+      "start_date": "2024-04-10T14:00:00Z",
+      "status": "upcoming",
+      "poster_url": "..."
+    }
+  ]
 }
 ```
 
@@ -318,6 +341,53 @@ Base URL: `http://localhost:5000`
     "status": "pending",
     "message": "I would love to join because...",
     "created_at": "2024-03-20T10:00:00Z"
+  }
+]
+```
+
+### Get Request Details (Protected - Owner Only)
+**Endpoint:** `GET /api/clubs/requests/:id`  
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200 OK):**
+```json
+{
+  "id": 10,
+  "user_id": 5,
+  "club_id": 1,
+  "status": "pending",
+  "message": "I would love to join because...",
+  "role": "member",
+  "created_at": "2024-03-20T10:00:00Z",
+  "user_details": {
+    "id": 5,
+    "name": "Praneeth",
+    "email": "praneeth@college.edu",
+    "oauth_accounts": [
+      {
+        "provider": "github",
+        "access_token": "..."
+      }
+    ]
+  }
+}
+```
+
+### Get Request User's GitHub Repos (Protected - Owner Only)
+**Endpoint:** `GET /api/clubs/requests/:id/github-repos`  
+**Headers:** `Authorization: Bearer <token>`
+**Description:** Fetches the GitHub repositories of the user who made the join request, if their account is linked to GitHub.
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 123456789,
+    "name": "hackathon-project",
+    "html_url": "https://github.com/praneeth/hackathon-project",
+    "description": "A cool project for a hackathon.",
+    "stargazers_count": 5,
+    "language": "Python"
   }
 ]
 ```

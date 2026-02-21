@@ -1,18 +1,44 @@
-# React + Vite
+# Club Hub - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend application for the Club Hub project, built with React and Vite.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Component-Based Architecture**: Reusable components in `src/components`.
+- **React Router**: Client-side routing with `react-router-dom`.
+- **State Management**: Using React Hooks (`useState`, `useEffect`, `useContext`).
+- **Styling**: Custom CSS with responsive design.
+- **API Integration**: Axios for communicating with the Flask backend.
 
-## React Compiler
+## 📂 Project Structure
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+```
+src/
+├── components/     # Reusable UI components (Navbar, Footer, etc.)
+├── layouts/        # Page layouts (DashboardLayout)
+├── pages/          # Application pages (Home, Login, Dashboard, etc.)
+├── functions/      # API service functions (auth, club, event, etc.)
+├── assets/         # Static assets
+└── App.jsx         # Main application component
+```
 
-Note: This will impact Vite dev & build performances.
+## 🛠️ Setup
 
-## Expanding the ESLint configuration
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+2. Start development server:
+   ```bash
+   npm run dev
+   ```
+
+3. Build for production:
+   ```bash
+   npm run build
+   ```
+
+## 🔗 Environment Variables
+
+This project uses a `config.js` file for API configuration. Ensure the backend URL matches your server setup.
