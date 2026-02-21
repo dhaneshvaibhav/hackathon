@@ -9,8 +9,9 @@ const Events = () => {
 
     useEffect(() => {
         const fetchEvents = async () => {
+            const token = localStorage.getItem('token');
             try {
-                const data = await getEvents();
+                const data = await getEvents(token);
                 setEvents(data);
             } catch (err) {
                 setError('Failed to fetch events');

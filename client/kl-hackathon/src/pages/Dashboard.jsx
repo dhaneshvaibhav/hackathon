@@ -28,7 +28,7 @@ const Dashboard = () => {
                 setUser(userData);
 
                 const [clubsData, requestsData] = await Promise.all([
-                    getClubs(),
+                    getClubs(token),
                     getMyRequests(token)
                 ]);
 

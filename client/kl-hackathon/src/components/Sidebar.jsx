@@ -10,19 +10,19 @@ import {
 import './Sidebar.css';
 
 const Sidebar = ({ isOpen, onClose }) => {
-    const [isAdmin, setIsAdmin] = useState(false);
-
-    useEffect(() => {
+    const [isAdmin, setIsAdmin] = useState(() => {
         const userStr = localStorage.getItem('user');
         if (userStr) {
             try {
                 const user = JSON.parse(userStr);
-                setIsAdmin(user.is_admin);
+                return user.is_admin;
             } catch (e) {
                 console.error("Failed to parse user from local storage", e);
+                return false;
             }
         }
-    }, []);
+        return false;
+    });
 
     const dashboardLink = isAdmin ? '/admin' : '/dashboard';
 
