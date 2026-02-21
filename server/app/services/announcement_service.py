@@ -48,6 +48,10 @@ class AnnouncementService:
         return Announcement.query.filter_by(event_id=event_id).order_by(Announcement.created_at.desc()).all()
 
     @staticmethod
+    def get_all_announcements():
+        return Announcement.query.order_by(Announcement.created_at.desc()).all()
+
+    @staticmethod
     def update_announcement(announcement_id, data, user_id):
         announcement = Announcement.query.get(announcement_id)
         if not announcement:

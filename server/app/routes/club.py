@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required
 from app.controllers.club_controller import (
     get_all_clubs as get_all_clubs_controller,
     get_managed_clubs as get_managed_clubs_controller,
+    get_club as get_club_controller,
     create_club as create_club_controller,
     update_club as update_club_controller,
     delete_club as delete_club_controller,
@@ -22,6 +23,10 @@ def get_all_clubs():
 @jwt_required()
 def get_managed_clubs():
     return get_managed_clubs_controller()
+
+@club_bp.route('/<int:club_id>', methods=['GET'])
+def get_club(club_id):
+    return get_club_controller(club_id)
 
 @club_bp.route('/', methods=['POST'])
 @jwt_required()

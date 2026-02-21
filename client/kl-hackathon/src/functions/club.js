@@ -23,6 +23,27 @@ export const getClubs = async (token = null) => {
     }
 };
 
+export const getClub = async (clubId, token = null) => {
+    try {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${API_URL}/${clubId}`, {
+            method: 'GET',
+            headers: headers,
+        });
+        if (!response.ok) throw new Error('Failed to fetch club');
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
 export const getManagedClubs = async (token) => {
     try {
         const response = await fetch(`${API_URL}/managed`, {

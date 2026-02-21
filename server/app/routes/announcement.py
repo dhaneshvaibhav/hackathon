@@ -3,11 +3,17 @@ from flask_jwt_extended import jwt_required
 from app.controllers.announcement_controller import (
     create_announcement,
     get_event_announcements,
+    get_all_announcements,
     update_announcement,
     delete_announcement
 )
 
 announcement_bp = Blueprint('announcement', __name__)
+
+# Public: Get all announcements
+@announcement_bp.route('/', methods=['GET'])
+def get_all():
+    return get_all_announcements()
 
 # Public: Get announcements for an event
 @announcement_bp.route('/event/<int:event_id>', methods=['GET'])

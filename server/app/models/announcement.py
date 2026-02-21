@@ -18,6 +18,7 @@ class Announcement(db.Model):
         return {
             'id': self.id,
             'event_id': self.event_id,
+            'event_title': self.event.title if self.event else None,
             'title': self.title,
             'content': self.content,
             'created_at': self.created_at.isoformat(),

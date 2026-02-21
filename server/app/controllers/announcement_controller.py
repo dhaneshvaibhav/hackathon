@@ -21,6 +21,10 @@ def get_event_announcements(event_id):
     announcements = AnnouncementService.get_announcements_by_event(event_id)
     return jsonify([a.to_dict() for a in announcements]), 200
 
+def get_all_announcements():
+    announcements = AnnouncementService.get_all_announcements()
+    return jsonify([a.to_dict() for a in announcements]), 200
+
 def update_announcement(announcement_id):
     current_user_id = get_jwt_identity()
     data = request.get_json()

@@ -4,6 +4,7 @@ import { Compass, CalendarDays, Users, ArrowRight, CheckCircle, Clock, XCircle, 
 import { getUserProfile } from '../functions/user';
 import { getClubs, getMyRequests, requestJoinClub } from '../functions/club';
 import { getEvents } from '../functions/event';
+import { getAnnouncements } from '../functions/announcement';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -12,6 +13,8 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [clubs, setClubs] = useState([]);
     const [events, setEvents] = useState([]);
+    const [announcements, setAnnouncements] = useState([]);
+    const [mixedContent, setMixedContent] = useState([]);
     const [myRequests, setMyRequests] = useState([]);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
@@ -29,15 +32,31 @@ const Dashboard = () => {
             try {
                 const userData = await getUserProfile(token);
                 setUser(userData);           
-               const [eventsData, clubsData, requestsData] = await Promise.all([
+               const [eventsData, clubsData, requestsData, announcementsData] = await Promise.all([
                 getEvents(),
                 getClubs(token),
-                getMyRequests(token)
+                getMyRequests(token),
+                getAnnouncements()
             ]);
 
             setEvents(eventsData);
             setClubs(clubsData);
             setMyRequests(requestsData);
+            setAnnouncements(announcementsData);
+            
+            // Combine and shuffle events and announcements
+            const combined = [
+                ...eventsData.map(e => ({ ...e, type: 'event' })),
+                ...announcementsData.map(a => ({ ...a, type: 'announcement' }))
+            ];
+            
+            // Shuffle
+            for (let i = combined.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [combined[i], combined[j]] = [combined[j], combined[i]];
+            }
+            
+            setMixedContent(combined);
 
             } catch (err) {
                 console.error('Failed to load dashboard data', err);
@@ -189,167 +208,122 @@ const Dashboard = () => {
     return (
         <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh' }}>
             <main className="container" style={{ padding: '3rem 2rem' }}>
-                <div style={{ marginBottom: '3rem' }}>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>
-                        Here is what's happening in your campus community.
-                    </p>
-                    {successMessage && (
-                        <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#dcfce7', color: '#166534', borderRadius: '8px' }}>
-                            {successMessage}
-                        </div>
-                    )}
-                    {errorMessage && (
-                        <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '8px' }}>
-                            {errorMessage}
-                        </div>
-                    )}
-                </div>
-
-                {/* Dashboard Stats */}
-                <div className="dashboard-stats-grid">
-                    <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ backgroundColor: '#e0e7ff', color: '#4f46e5', padding: '1rem', borderRadius: '50%' }}>
-                            <Users size={24} />
-                        </div>
-                        <div>
-                            <h3 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>{myClubsCount}</h3>
-                            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>My Clubs</p>
-                        </div>
-                    </div>
-
-                    <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ backgroundColor: '#fce7f3', color: '#db2777', padding: '1rem', borderRadius: '50%' }}>
-                            <CalendarDays size={24} />
-                        </div>
-                        <div>
-                            <h3 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>{upcomingEventsCount}</h3>
-                            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Upcoming Events</p>
-                        </div>
-                    </div>
-
-                    <div style={{ backgroundColor: 'var(--accent)', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'white', textDecoration: 'none' }}>
-                        <Link to="/profile" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', color: 'white', textDecoration: 'none' }}>
-                            <div>
-                                <h3 style={{ margin: 0, fontSize: '1.25rem', marginBottom: '0.25rem' }}>Your Profile</h3>
-                                <p style={{ margin: 0, opacity: 0.9, fontSize: '0.9rem' }}>View or edit your details</p>
+                <div style={{ marginBottom: '3rem', maxWidth: '800px', margin: '0 auto' }}>
+                    {/* Events Carousel */}
+                    <div style={{ marginBottom: '2.5rem' }}>
+                        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-main)', fontWeight: '600' }}>Discover Events</h2>
+                        {events.length === 0 ? (
+                            <div style={{ padding: '2rem', backgroundColor: 'white', borderRadius: '12px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                No upcoming events found.
                             </div>
-                            <ArrowRight size={24} color="white" />
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Main Content Areas */}
-                <div className="dashboard-content-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginTop: '2rem' }}>
-
-                    {/* Upcoming Events */}
-                    <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                        <h3 style={{ fontSize: '1.25rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <CalendarDays size={20} color="var(--primary)" /> Upcoming Events
-                        </h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            {events.length === 0 ? (
-                                <p>No upcoming events.</p>
-                            ) : (
-                                events.slice(0, 3).map(event => (
-                                    <div key={event.id} style={{ padding: '1rem', backgroundColor: '#f8fafc', borderRadius: '8px', borderLeft: '4px solid var(--primary)' }}>
-                                        <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--primary)' }}>{event.title}</h4>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                            <span>{new Date(event.start_date).toLocaleDateString()}</span>
-                                            <span>{event.location || 'TBA'}</span>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                            {events.length > 3 && (
-                                <Link to="/events" style={{ textAlign: 'center', display: 'block', marginTop: '1rem', color: 'var(--primary)', textDecoration: 'none', fontSize: '0.9rem' }}>
-                                    View All Events
-                                </Link>
-                            )}
-                        </div>
-                    </section>
-
-                    {/* Discover Clubs */}
-                    <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                        <h3 style={{ fontSize: '1.25rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Compass size={20} color="var(--primary)" /> Discover New Clubs
-                        </h3>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            {clubs.length === 0 ? (
-                                <p>No clubs available yet.</p>
-                            ) : (
-                                clubs.map(club => {
-                                    const status = getClubStatus(club);
-                                    return (
-                                        <div key={club.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
-                                            <div>
-                                                <h4 style={{ margin: 0, color: 'var(--primary)' }}>{club.name}</h4>
-                                                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>{club.category}</p>
-                                            </div>
-                                            {status ? (
-                                                <span style={{ 
-                                                    padding: '0.4rem 0.8rem', 
-                                                    fontSize: '0.85rem', 
-                                                    borderRadius: '4px', 
-                                                    backgroundColor: status.status === 'member' ? '#dcfce7' : '#ffedd5',
-                                                    color: status.status === 'member' ? '#166534' : '#9a3412',
-                                                    display: 'flex', alignItems: 'center', gap: '0.25rem'
-                                                }}>
-                                                    {status.status === 'member' ? <CheckCircle size={14} /> : <Clock size={14} />}
-                                                    {status.label}
-                                                </span>
-                                            ) : (
-                                                <button 
-                                                    className="btn btn-outline" 
-                                                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
-                                                    onClick={() => handleJoinRequest(club.id)}
-                                                >
-                                                    Join
-                                                </button>
-                                            )}
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </div>
-                    </section>
-                    
-                    {/* My Requests Status */}
-                     <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                        <h3 style={{ fontSize: '1.25rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-                             My Recent Requests
-                        </h3>
-                        
-                        {myRequests.length === 0 ? (
-                            <p>No recent requests.</p>
                         ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {myRequests.map(req => (
-                                    <div key={req.id} style={{ padding: '1rem', border: '1px solid #eee', borderRadius: '8px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                            <strong>{req.club_name}</strong>
-                                            <span style={{ 
-                                                textTransform: 'capitalize', 
-                                                fontWeight: 'bold',
-                                                color: req.status === 'accepted' ? 'green' : req.status === 'rejected' ? 'red' : 'orange'
-                                            }}>
-                                                {req.status}
-                                            </span>
+                            <div style={{ 
+                                display: 'flex', 
+                                gap: '1.5rem', 
+                                overflowX: 'auto', 
+                                paddingBottom: '1rem',
+                                scrollSnapType: 'x mandatory',
+                                WebkitOverflowScrolling: 'touch'
+                            }}>
+                                {events.map(event => (
+                                    <div key={event.id} style={{ 
+                                        minWidth: '300px', 
+                                        maxWidth: '300px',
+                                        backgroundColor: 'white', 
+                                        borderRadius: '16px', 
+                                        boxShadow: '0 4px 6px rgba(0,0,0,0.05)', 
+                                        border: '1px solid #e2e8f0',
+                                        overflow: 'hidden',
+                                        scrollSnapAlign: 'start',
+                                        display: 'flex',
+                                        flexDirection: 'column'
+                                    }}>
+                                        <div style={{ 
+                                            height: '140px', 
+                                            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white'
+                                        }}>
+                                            <CalendarDays size={48} opacity={0.5} />
                                         </div>
-                                        {req.admin_response && (
-                                            <div style={{ fontSize: '0.9rem', backgroundColor: '#f9f9f9', padding: '0.5rem', borderRadius: '4px' }}>
-                                                <span style={{ fontWeight: 'bold' }}>Admin:</span> {req.admin_response}
+                                        <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: '600', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                                                {new Date(event.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {new Date(event.start_date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                                             </div>
-                                        )}
-                                        <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '0.5rem' }}>
-                                            {new Date(req.created_at).toLocaleDateString()}
+                                            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem', lineHeight: '1.4' }}>{event.title}</h3>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                                                <MapPin size={14} />
+                                                <span>{event.location || 'TBD'}</span>
+                                            </div>
+                                            <Link to={`/events/${event.id}`} style={{ 
+                                                marginTop: 'auto',
+                                                display: 'flex', 
+                                                alignItems: 'center', 
+                                                justifyContent: 'center',
+                                                gap: '0.5rem',
+                                                padding: '0.75rem',
+                                                backgroundColor: '#f1f5f9',
+                                                color: 'var(--text-main)',
+                                                borderRadius: '8px',
+                                                textDecoration: 'none',
+                                                fontWeight: '500',
+                                                transition: 'background-color 0.2s'
+                                            }}>
+                                                View Details
+                                            </Link>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         )}
-                     </section>
+                    </div>
 
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: 'var(--text-main)' }}>Announcements</h3>
+                    </div>
+                    
+                    {announcements.length === 0 ? (
+                        <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>No announcements available.</p>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {announcements.map((item) => (
+                                <div key={item.id} style={{ 
+                                    backgroundColor: 'white', 
+                                    padding: '1.5rem', 
+                                    borderRadius: '12px', 
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)', 
+                                    border: '1px solid #e2e8f0', 
+                                    display: 'flex', 
+                                    flexDirection: 'column', 
+                                    borderLeft: '4px solid #0ea5e9' 
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0ea5e9', fontWeight: 'bold', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                            <Users size={16} /> Announcement
+                                        </div>
+                                        <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{new Date(item.created_at).toLocaleDateString()}</span>
+                                    </div>
+                                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>{item.title}</h3>
+                                    {item.event_title && (
+                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+                                            {item.event_id ? (
+                                                <Link to={`/events/${item.event_id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                                    Re: {item.event_title}
+                                                </Link>
+                                            ) : (
+                                                <span>Re: {item.event_title}</span>
+                                            )}
+                                        </div>
+                                    )}
+                                    <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '0.5rem' }}>
+                                        {item.content}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </main>
         </div>
