@@ -129,6 +129,23 @@ Base URL: `http://localhost:5000`
 }
 ```
 
+### Become Creator (Promote to Admin)
+**Endpoint:** `POST /api/users/me/become-creator`  
+**Headers:** `Authorization: Bearer <token>`
+**Description:** Promotes the current user to a club creator/admin role.
+
+**Response (200 OK):**
+```json
+{
+  "message": "User promoted to creator successfully",
+  "user": {
+    "id": 1,
+    "is_admin": true
+    // ... other fields
+  }
+}
+```
+
 ### Delete Account
 **Endpoint:** `DELETE /api/users/me`  
 **Headers:** `Authorization: Bearer <token>`
@@ -142,7 +159,7 @@ Base URL: `http://localhost:5000`
 
 ---
 
-## 🏆 Clubs (Proposed)
+## 🏆 Clubs
 
 ### Get All Clubs
 **Endpoint:** `GET /api/clubs`
@@ -169,24 +186,21 @@ Base URL: `http://localhost:5000`
 ]
 ```
 
-### Get Club Details
-**Endpoint:** `GET /api/clubs/:id`
+### Get Managed Clubs
+**Endpoint:** `GET /api/clubs/managed`  
+**Headers:** `Authorization: Bearer <token>`
+**Description:** Returns clubs owned/managed by the current user.
 
 **Response (200 OK):**
 ```json
-{
-  "id": 1,
-  "name": "Coding Club",
-  "description": "A community for coders.",
-  "logo_url": "https://example.com/logo.png",
-  "category": "Tech",
-  "owner_id": 5,
-  "members": [
-    { "user_id": 10, "role": "member" },
-    { "user_id": 12, "role": "treasurer" }
-  ],
-  "created_at": "2023-09-01T12:00:00Z"
-}
+[
+  {
+    "id": 1,
+    "name": "Coding Club",
+    "owner_id": 5
+    // ...
+  }
+]
 ```
 
 ### Create Club (Protected)
@@ -206,18 +220,132 @@ Base URL: `http://localhost:5000`
 **Response (201 Created):**
 ```json
 {
-  "message": "Club created successfully",
-  "club": {
-    "id": 3,
-    "name": "AI Society",
-    "owner_id": 1
-  }
+  "id": 3,
+  "name": "AI Society",
+  "owner_id": 1,
+  "description": "Exploring Artificial Intelligence.",
+  "category": "Tech",
+  "logo_url": "https://example.com/ai-logo.png",
+  "members": []
 }
+```
+
+### Update Club (Protected)
+**Endpoint:** `PUT /api/clubs/:id`  
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+```json
+{
+  "description": "Updated description",
+  "logo_url": "https://example.com/new-logo.png"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": 3,
+  "name": "AI Society",
+  "description": "Updated description",
+  // ...
+}
+```
+
+### Delete Club (Protected)
+**Endpoint:** `DELETE /api/clubs/:id`  
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200 OK):**
+```json
+{
+  "message": "Club deleted successfully"
+}
+```
+
+### Request to Join Club (Protected)
+**Endpoint:** `POST /api/clubs/:id/join`  
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body (Optional):**
+```json
+{
+  "message": "I would love to join because..."
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": 10,
+  "user_id": 5,
+  "club_id": 1,
+  "status": "pending",
+  "message": "I would love to join because..."
+}
+```
+
+### Get Club Join Requests (Protected - Owner Only)
+**Endpoint:** `GET /api/clubs/:id/requests`  
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 10,
+    "user_id": 5,
+    "club_id": 1,
+    "status": "pending",
+    "message": "I would love to join because...",
+    "created_at": "2024-03-20T10:00:00Z"
+  }
+]
+```
+
+### Handle Join Request (Protected - Owner Only)
+**Endpoint:** `PUT /api/clubs/requests/:id`  
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+```json
+{
+  "status": "approved", 
+  "admin_response": "Welcome to the club!"
+}
+```
+*Note: `status` can be "approved" or "rejected".*
+
+**Response (200 OK):**
+```json
+{
+  "id": 10,
+  "status": "approved",
+  "admin_response": "Welcome to the club!",
+  // ...
+}
+```
+
+### Get My Join Requests (Protected)
+**Endpoint:** `GET /api/clubs/my-requests`  
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 10,
+    "club_id": 1,
+    "status": "pending",
+    "message": "I would love to join because...",
+    "created_at": "2024-03-20T10:00:00Z"
+  }
+]
 ```
 
 ---
 
-## 📅 Events (Proposed)
+## 📅 Events
 
 ### Get All Events
 **Endpoint:** `GET /api/events`
@@ -231,7 +359,8 @@ Base URL: `http://localhost:5000`
     "description": "Join us for a session on AI trends.",
     "club_id": 1,
     "poster_url": "https://example.com/talk.jpg",
-    "event_date": "2024-04-10T14:00:00Z",
+    "start_date": "2024-04-10T14:00:00Z",
+    "end_date": "2024-04-10T16:00:00Z",
     "location": "Room 303",
     "fee": 5.00,
     "status": "upcoming",
@@ -254,7 +383,8 @@ Base URL: `http://localhost:5000`
   "description": "Join us for a session on AI trends.",
   "club_id": 1,
   "poster_url": "https://example.com/talk.jpg",
-  "event_date": "2024-04-10T14:00:00Z",
+  "start_date": "2024-04-10T14:00:00Z",
+  "end_date": "2024-04-10T16:00:00Z",
   "location": "Room 303",
   "fee": 5.00,
   "status": "upcoming",
@@ -275,7 +405,8 @@ Base URL: `http://localhost:5000`
   "title": "Tech Talk: Future of AI",
   "description": "Join us for a session on AI trends.",
   "club_id": 1,
-  "event_date": "2024-04-10T14:00:00Z",
+  "start_date": "2024-04-10T14:00:00Z",
+  "end_date": "2024-04-10T16:00:00Z",
   "location": "Room 303",
   "fee": 5.00,
   "poster_url": "https://example.com/talk.jpg",
@@ -285,6 +416,7 @@ Base URL: `http://localhost:5000`
   }
 }
 ```
+*Note: `status` is automatically calculated based on `start_date` and `end_date`.*
 
 **Response (201 Created):**
 ```json
@@ -293,7 +425,56 @@ Base URL: `http://localhost:5000`
   "event": {
     "id": 2,
     "title": "Tech Talk: Future of AI",
-    "status": "upcoming"
+    "status": "upcoming",
+    "start_date": "2024-04-10T14:00:00Z",
+    "end_date": "2024-04-10T16:00:00Z"
   }
+}
+```
+
+### Update Event (Protected)
+**Endpoint:** `PUT /api/events/:id`  
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+```json
+{
+  "title": "Updated Tech Talk Title",
+  "start_date": "2024-04-11T14:00:00Z",
+  "end_date": "2024-04-11T16:00:00Z",
+  "meta_data": {
+    "speaker": "Dr. Jones",
+    "registration_link": "https://new-link.com"
+  }
+}
+```
+*Note: `status` is automatically recalculated based on the updated `start_date` and `end_date`.*
+
+**Response (200 OK):**
+```json
+{
+  "message": "Event updated successfully",
+  "event": {
+    "id": 2,
+    "title": "Updated Tech Talk Title",
+    "start_date": "2024-04-11T14:00:00Z",
+    "end_date": "2024-04-11T16:00:00Z",
+    "status": "upcoming",
+    "meta_data": {
+      "speaker": "Dr. Jones",
+      "registration_link": "https://new-link.com"
+    }
+  }
+}
+```
+
+### Delete Event (Protected)
+**Endpoint:** `DELETE /api/events/:id`  
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200 OK):**
+```json
+{
+  "message": "Event deleted successfully"
 }
 ```
