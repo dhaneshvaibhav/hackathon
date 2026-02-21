@@ -49,6 +49,20 @@ class ClubService:
         return Club.query.get(club_id)
 
     @staticmethod
+    def search_clubs(query):
+        """
+        Search clubs by name, description, or category.
+        :param query: Search query string
+        :return: List of Club objects
+        """
+        search = f"%{query}%"
+        return Club.query.filter(
+            (Club.name.ilike(search)) |
+            (Club.description.ilike(search)) |
+            (Club.category.ilike(search))
+        ).all()
+
+    @staticmethod
     def update_club(club_id, data, user_id):
         user_id = int(user_id)
         club = Club.query.get(club_id)

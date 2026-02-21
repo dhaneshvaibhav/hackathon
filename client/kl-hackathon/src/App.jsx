@@ -36,12 +36,12 @@ function App() {
         
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/clubs" element={<Clubs />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/profile" element={<Profile />} />
-          </Route>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/clubs" element={<Clubs />} />
+                    <Route path="/events" element={<Events />} />
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/profile" element={<Profile />} />
+                </Route>
         </Route>
       </Routes>
     </Router>

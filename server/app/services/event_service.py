@@ -97,7 +97,21 @@ class EventService:
         return Event.query.get(event_id)
 
     @staticmethod
-    def update_event(event_id, data, user_id):
+    def search_events(query):
+        """
+        Search events by title, description, or location.
+        :param query: Search query string
+        :return: List of Event objects
+        """
+        search = f"%{query}%"
+        return Event.query.filter(
+            (Event.title.ilike(search)) |
+            (Event.description.ilike(search)) |
+            (Event.location.ilike(search))
+        ).all()
+
+    @staticmethod
+  def update_event(event_id, data, user_id):
         """
         Update an existing event.
         :param event_id: ID of the event to update
