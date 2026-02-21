@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Compass, CalendarDays, Users, ArrowRight, ShieldAlert, LayoutDashboard, CheckCircle, XCircle } from 'lucide-react';
 import { getUserProfile } from '../functions/user';
 import { getManagedClubs, createClub, getClubRequests, handleClubRequest } from '../functions/club';
+import { uploadMedia } from '../functions/upload';
 import './Dashboard.css';
 
 const AdminDashboard = () => {
@@ -12,6 +13,8 @@ const AdminDashboard = () => {
     const [requests, setRequests] = useState({}); // clubId -> requests array
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newClub, setNewClub] = useState({ name: '', description: '', category: '', logo_url: '' });
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
     const [createError, setCreateError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     
@@ -66,16 +69,30 @@ const AdminDashboard = () => {
     const handleCreateClub = async (e) => {
         e.preventDefault();
         setCreateError('');
+        setUploading(true);
         const token = localStorage.getItem('token');
+        
         try {
-            const club = await createClub(token, newClub);
+            let logoUrl = newClub.logo_url;
+            
+            if (selectedFile) {
+                const uploadResult = await uploadMedia(token, selectedFile);
+                logoUrl = uploadResult.url;
+            }
+            
+            const clubData = { ...newClub, logo_url: logoUrl };
+            const club = await createClub(token, clubData);
+            
             setClubs([...clubs, club]);
             setShowCreateModal(false);
             setNewClub({ name: '', description: '', category: '', logo_url: '' });
+            setSelectedFile(null);
             setSuccessMessage('Club created successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             setCreateError(err.message);
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -263,6 +280,15 @@ const AdminDashboard = () => {
                                         onChange={(e) => setNewClub({...newClub, description: e.target.value})}
                                     />
                                 </div>
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Club Logo</label>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={(e) => setSelectedFile(e.target.files[0])}
+                                        style={{ width: '100%', padding: '0.5rem' }}
+                                    />
+                                </div>
                                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                                     <button 
                                         type="button" 
@@ -271,8 +297,8 @@ const AdminDashboard = () => {
                                     >
                                         Cancel
                                     </button>
-                                    <button type="submit" className="btn btn-primary">
-                                        Create Club
+                                    <button type="submit" className="btn btn-primary" disabled={uploading}>
+                                        {uploading ? 'Creating...' : 'Create Club'}
                                     </button>
                                 </div>
                             </form>
