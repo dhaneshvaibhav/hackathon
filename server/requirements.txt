@@ -5,3 +5,4 @@ flask-sqlalchemy
 psycopg2-binary
 flask-jwt-extended
 werkzeug
+flask-migrate

@@ -1,6 +1,6 @@
 from flask import Flask
 from app.config import config
-from app.extensions import db, cors, jwt
+from app.extensions import db, cors, jwt, migrate
 
 def create_app(config_name='default'):
     app = Flask(__name__)
@@ -12,6 +12,7 @@ def create_app(config_name='default'):
     db.init_app(app)
     cors.init_app(app)
     jwt.init_app(app)
+    migrate.init_app(app, db)
     
     # Register blueprints
     from app.routes.main import main_bp
