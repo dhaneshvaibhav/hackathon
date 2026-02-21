@@ -211,13 +211,6 @@ const AdminDashboard = () => {
                                 <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Managed Clubs</p>
                             </div>
                         </div>
-                        <button 
-                            onClick={() => setShowCreateClubModal(true)}
-                            className="btn-primary"
-                            style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
-                        >
-                            + Create Club
-                        </button>
                     </div>
                 </div>
 

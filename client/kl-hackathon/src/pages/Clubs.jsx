@@ -156,13 +156,15 @@ const Clubs = () => {
                         </h1>
                         <p style={{ color: 'var(--text-muted)' }}>Find and join communities that match your interests.</p>
                     </div>
-                    <button 
-                        onClick={() => setShowCreateModal(true)}
-                        className="btn-primary"
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                    >
-                        <PlusCircle size={20} /> Create Club
-                    </button>
+                    {user && user.is_admin && (
+                        <button 
+                            onClick={() => setShowCreateModal(true)}
+                            className="btn-primary"
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        >
+                            <PlusCircle size={20} /> Create Club
+                        </button>
+                    )}
                 </div>
 
                 {successMessage && (
