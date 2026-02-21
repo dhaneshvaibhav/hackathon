@@ -3,7 +3,8 @@ from flask_jwt_extended import jwt_required
 from app.controllers.user_controller import (
     get_current_user_profile,
     update_current_user_profile,
-    delete_current_user_account
+    delete_current_user_account,
+    become_creator
 )
 
 user_bp = Blueprint('user', __name__)
@@ -17,6 +18,11 @@ def get_profile():
 @jwt_required()
 def update_profile():
     return update_current_user_profile()
+
+@user_bp.route('/me/become-creator', methods=['POST'])
+@jwt_required()
+def promote_user():
+    return become_creator()
 
 @user_bp.route('/me', methods=['DELETE'])
 @jwt_required()

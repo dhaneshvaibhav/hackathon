@@ -1,0 +1,74 @@
+from flask import request, jsonify
+from flask_jwt_extended import get_jwt_identity
+from app.services.club_service import ClubService
+
+def get_all_clubs():
+    clubs = ClubService.get_all_clubs()
+    return jsonify([c.to_dict() for c in clubs]), 200
+
+def get_managed_clubs():
+    current_user_id = get_jwt_identity()
+    clubs = ClubService.get_clubs_by_owner(current_user_id)
+    return jsonify([c.to_dict() for c in clubs]), 200
+
+def create_club():
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({'error': 'No input data provided'}), 400
+        
+    club, error = ClubService.create_club(data, current_user_id)
+    
+    if error:
+        return jsonify({'error': error}), 400
+        
+    return jsonify(club.to_dict()), 201
+
+def request_join(club_id):
+    current_user_id = get_jwt_identity()
+    data = request.get_json() or {}
+    message = data.get('message', '')
+    
+    req, error = ClubService.request_to_join(club_id, current_user_id, message)
+    
+    if error:
+        return jsonify({'error': error}), 400
+        
+    return jsonify(req.to_dict()), 201
+
+def get_requests(club_id):
+    current_user_id = get_jwt_identity()
+    
+    # Check if user is owner of the club
+    requests, error = ClubService.get_club_requests(club_id, current_user_id)
+    
+    if error:
+        return jsonify({'error': error}), 403
+        
+    return jsonify([r.to_dict() for r in requests]), 200
+
+def handle_request(request_id):
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({'error': 'No input data provided'}), 400
+
+    status = data.get('status')
+    admin_response = data.get('admin_response')
+    
+    if not status:
+        return jsonify({'error': 'Status is required'}), 400
+
+    req, error = ClubService.handle_request(request_id, status, admin_response, current_user_id)
+    
+    if error:
+        return jsonify({'error': error}), 400
+        
+    return jsonify(req.to_dict()), 200
+
+def get_my_requests():
+    current_user_id = get_jwt_identity()
+    requests = ClubService.get_user_requests(current_user_id)
+    return jsonify([r.to_dict() for r in requests]), 200
