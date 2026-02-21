@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Compass, CalendarDays, Users, ArrowRight, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Link, useNavigate, useOutletContext } from 'react-router-dom';
+import { Compass, CalendarDays, Users, ArrowRight, CheckCircle, Clock, XCircle, MapPin } from 'lucide-react';
 import { getUserProfile } from '../functions/user';
 import { getClubs, getMyRequests, requestJoinClub } from '../functions/club';
+import { getEvents } from '../functions/event';
 import './Dashboard.css';
 
 const Dashboard = () => {
+    const { searchQuery } = useOutletContext() || { searchQuery: '' };
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [clubs, setClubs] = useState([]);
+    const [events, setEvents] = useState([]);
     const [myRequests, setMyRequests] = useState([]);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
@@ -27,13 +30,15 @@ const Dashboard = () => {
                 const userData = await getUserProfile(token);
                 setUser(userData);
 
-                const [clubsData, requestsData] = await Promise.all([
+                const [clubsData, requestsData, eventsData] = await Promise.all([
                     getClubs(),
-                    getMyRequests(token)
+                    getMyRequests(token),
+                    getEvents()
                 ]);
 
                 setClubs(clubsData);
                 setMyRequests(requestsData);
+                setEvents(eventsData);
 
             } catch (err) {
                 console.error('Failed to load dashboard data', err);
@@ -91,6 +96,96 @@ const Dashboard = () => {
     if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading your dashboard...</div>;
 
     const myClubsCount = clubs.filter(c => c.members && c.members.some(m => m.user_id === user?.id)).length;
+    
+    // Filter logic for search
+    const filteredClubs = clubs.filter(club => 
+        !searchQuery || 
+        club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        club.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        club.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const filteredEvents = events.filter(event => 
+        !searchQuery ||
+        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.location?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const upcomingEventsCount = events.length;
+
+    // Search Results View
+    if (searchQuery) {
+        return (
+            <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh' }}>
+                <main className="container" style={{ padding: '3rem 2rem' }}>
+                    <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>
+                        Search Results for "{searchQuery}"
+                    </h2>
+                    
+                    <div className="dashboard-content-grid" style={{ gap: '2rem' }}>
+                        {/* Clubs Results */}
+                        <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                            <h3 style={{ fontSize: '1.25rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+                                Clubs ({filteredClubs.length})
+                            </h3>
+                            {filteredClubs.length === 0 ? (
+                                <p>No clubs found.</p>
+                            ) : (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+                                    {filteredClubs.map(club => (
+                                        <div key={club.id} style={{ padding: '1rem', border: '1px solid #eee', borderRadius: '8px' }}>
+                                            <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--primary)' }}>{club.name}</h4>
+                                            <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{club.category}</p>
+                                            <p style={{ margin: 0, fontSize: '0.9rem' }}>{club.description?.substring(0, 100)}...</p>
+                                            <button 
+                                                className="btn btn-outline" 
+                                                style={{ marginTop: '1rem', width: '100%', padding: '0.5rem' }}
+                                                onClick={() => handleJoinRequest(club.id)}
+                                            >
+                                                Join
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </section>
+
+                        {/* Events Results */}
+                        <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                            <h3 style={{ fontSize: '1.25rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+                                Events ({filteredEvents.length})
+                            </h3>
+                            {filteredEvents.length === 0 ? (
+                                <p>No events found.</p>
+                            ) : (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+                                    {filteredEvents.map(event => (
+                                        <div key={event.id} style={{ padding: '1rem', border: '1px solid #eee', borderRadius: '8px' }}>
+                                            <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--primary)' }}>{event.title}</h4>
+                                            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                    <CalendarDays size={14} />
+                                                    {new Date(event.start_date).toLocaleDateString()}
+                                                </span>
+                                                {event.location && (
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                        <MapPin size={14} />
+                                                        {event.location}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p style={{ margin: 0, fontSize: '0.9rem' }}>{event.description?.substring(0, 100)}...</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </section>
+                    </div>
+                </main>
+            </div>
+        );
+    }
 
     return (
         <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh' }}>
@@ -128,7 +223,7 @@ const Dashboard = () => {
                             <CalendarDays size={24} />
                         </div>
                         <div>
-                            <h3 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>0</h3>
+                            <h3 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>{upcomingEventsCount}</h3>
                             <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Upcoming Events</p>
                         </div>
                     </div>
@@ -145,7 +240,34 @@ const Dashboard = () => {
                 </div>
 
                 {/* Main Content Areas */}
-                <div className="dashboard-content-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '2rem' }}>
+                <div className="dashboard-content-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginTop: '2rem' }}>
+
+                    {/* Upcoming Events */}
+                    <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                        <h3 style={{ fontSize: '1.25rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <CalendarDays size={20} color="var(--primary)" /> Upcoming Events
+                        </h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {events.length === 0 ? (
+                                <p>No upcoming events.</p>
+                            ) : (
+                                events.slice(0, 3).map(event => (
+                                    <div key={event.id} style={{ padding: '1rem', backgroundColor: '#f8fafc', borderRadius: '8px', borderLeft: '4px solid var(--primary)' }}>
+                                        <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--primary)' }}>{event.title}</h4>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                            <span>{new Date(event.start_date).toLocaleDateString()}</span>
+                                            <span>{event.location || 'TBA'}</span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                            {events.length > 3 && (
+                                <Link to="/events" style={{ textAlign: 'center', display: 'block', marginTop: '1rem', color: 'var(--primary)', textDecoration: 'none', fontSize: '0.9rem' }}>
+                                    View All Events
+                                </Link>
+                            )}
+                        </div>
+                    </section>
 
                     {/* Discover Clubs */}
                     <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>

@@ -12,8 +12,10 @@ const DashboardLayout = () => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState(null);
-    const navigate = useNavigate();
-
+    const [searchQuery, setSearchQuery] = useState('');
+    
+    // Pass searchQuery to children via Outlet context
+    
     useEffect(() => {
         const fetchNotifications = async () => {
             const token = localStorage.getItem('token');
@@ -102,7 +104,12 @@ const DashboardLayout = () => {
                     <div className="header-center">
                         <div className="search-bar">
                             <Search size={18} className="search-icon" />
-                            <input type="text" placeholder="Search..." />
+                            <input 
+                                type="text" 
+                                placeholder="Search..." 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
                         </div>
                     </div>
 
@@ -215,7 +222,7 @@ const DashboardLayout = () => {
                     </div>
                 </header>
                 <main className="dashboard-content">
-                    <Outlet />
+                    <Outlet context={{ searchQuery }} />
                 </main>
             </div>
         </div>
