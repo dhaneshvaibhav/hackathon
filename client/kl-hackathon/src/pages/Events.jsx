@@ -69,6 +69,13 @@ const Events = () => {
                                     <span style={{ color: 'green', fontWeight: 'bold' }}>Free</span>
                                 )}
                             </div>
+                            <button 
+                                className="btn btn-primary" 
+                                style={{ marginTop: '1rem', width: '100%', padding: '0.5rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                onClick={() => alert(`You have successfully registered for ${event.title}!`)}
+                            >
+                                Register
+                            </button>
                         </div>
                     ))}
                     {filteredEvents.length === 0 && (
