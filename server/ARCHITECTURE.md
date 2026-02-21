@@ -15,17 +15,23 @@ server/
 │   │   ├── club.py          # Club Model
 │   │   └── event.py         # Event Model
 │   ├── routes/              # API Route Definitions (Blueprints)
-│   │   ├── auth.py          # Authentication Routes
-│   │   ├── user.py          # User Management Routes
-│   │   └── main.py          # General Routes
-│   ├── controllers/         # Request Handling & Validation
-│   │   ├── auth_controller.py
-│   │   ├── user_controller.py
-│   │   └── main_controller.py
-│   ├── services/            # Core Business Logic & DB Interactions
-│   │   ├── auth_service.py
-│   │   ├── user_service.py
-│   │   └── main_service.py
+    │   │   ├── auth.py          # Authentication Routes
+    │   │   ├── user.py          # User Management Routes
+    │   │   ├── club.py          # Club Management Routes
+    │   │   ├── event.py         # Event Management Routes
+    │   │   └── main.py          # General Routes
+    │   ├── controllers/         # Request Handling & Validation
+    │   │   ├── auth_controller.py
+    │   │   ├── user_controller.py
+    │   │   ├── club_controller.py
+    │   │   ├── event_controller.py
+    │   │   └── main_controller.py
+    │   ├── services/            # Core Business Logic & DB Interactions
+    │   │   ├── auth_service.py
+    │   │   ├── user_service.py
+    │   │   ├── club_service.py
+    │   │   ├── event_service.py
+    │   │   └── main_service.py
 │   └── utils/               # Helper Functions
 │       └── auth_utils.py    # Password Hashing, Token Generation
 ├── migrations/              # Database Migrations (Alembic)
