@@ -5,24 +5,29 @@ import {
     Compass,
     Calendar,
     UserPlus,
-    LayoutDashboard
+    LayoutDashboard,
+    Shield
 } from 'lucide-react';
 import './Sidebar.css';
 
-const Sidebar = ({ isOpen, onClose }) => {
-    const [isAdmin, setIsAdmin] = useState(() => {
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-            try {
-                const user = JSON.parse(userStr);
-                return user.is_admin;
-            } catch (e) {
-                console.error("Failed to parse user from local storage", e);
-                return false;
+const Sidebar = ({ isOpen, onClose, user, onBecomeCreator }) => {
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        if (user) {
+            setIsAdmin(user.is_admin);
+        } else {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const parsedUser = JSON.parse(userStr);
+                    setIsAdmin(parsedUser.is_admin);
+                } catch (e) {
+                    console.error("Failed to parse user from local storage", e);
+                }
             }
         }
-        return false;
-    });
+    }, [user]);
 
     const dashboardLink = isAdmin ? '/admin' : '/dashboard';
 
@@ -59,6 +64,29 @@ const Sidebar = ({ isOpen, onClose }) => {
                                 <span>Profile</span>
                             </NavLink>
                         </li>
+                        {!isAdmin && onBecomeCreator && (
+                            <li>
+                                <button 
+                                    onClick={() => {
+                                        onClose();
+                                        onBecomeCreator();
+                                    }} 
+                                    className="nav-link" 
+                                    style={{ 
+                                        background: 'transparent', 
+                                        border: 'none', 
+                                        width: '100%', 
+                                        textAlign: 'left', 
+                                        cursor: 'pointer',
+                                        fontSize: 'inherit',
+                                        fontFamily: 'inherit'
+                                    }}
+                                >
+                                    <Shield size={20} />
+                                    <span>Become Creator</span>
+                                </button>
+                            </li>
+                        )}
                     </ul>
                 </nav>
 

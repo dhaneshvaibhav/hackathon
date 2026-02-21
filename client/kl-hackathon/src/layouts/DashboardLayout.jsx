@@ -117,7 +117,12 @@ const DashboardLayout = () => {
 
     return (
         <div className="dashboard-layout">
-            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+            <Sidebar 
+                isOpen={isSidebarOpen} 
+                onClose={() => setIsSidebarOpen(false)} 
+                user={user}
+                onBecomeCreator={handleBecomeCreator}
+            />
             <div className="main-wrapper">
                 <header className="dashboard-header">
                     <div className="header-left">
