@@ -21,13 +21,10 @@ logger = logging.getLogger(__name__)
 # Global memory saver for in-memory persistence
 memory = MemorySaver()
 
-# Hardcoded key fallback (migration to .env recommended)
-DEFAULT_API_KEY = "AIzaSyDzEtA8sRaSbowXeljTlu4N4xASHmZh9s8"
-
 class AIService:
     @staticmethod
     def get_model():
-        api_key = os.getenv("GEMINI_API_KEY") or DEFAULT_API_KEY
+        api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             logger.warning("GEMINI_API_KEY not found.")
             return None
