@@ -61,8 +61,12 @@ def request_join(club_id):
     current_user_id = get_jwt_identity()
     data = request.get_json() or {}
     message = data.get('message', '')
+    role = data.get('role')
+
+    if not role:
+        return jsonify({'error': 'Role is required'}), 400
     
-    req, error = ClubService.request_to_join(club_id, current_user_id, message)
+    req, error = ClubService.request_to_join(club_id, current_user_id, message, role)
     
     if error:
         return jsonify({'error': error}), 400

@@ -125,7 +125,7 @@ class ClubService:
             return None, str(e)
 
     @staticmethod
-    def request_to_join(club_id, user_id, message):
+    def request_to_join(club_id, user_id, message, role):
         user_id = int(user_id)
         club = Club.query.get(club_id)
         if not club:
@@ -140,11 +140,16 @@ class ClubService:
         existing_req = ClubRequest.query.filter_by(club_id=club_id, user_id=user_id, status='pending').first()
         if existing_req:
             return None, "Pending request already exists"
+        
+        # Check if role is valid
+        if role not in (club.roles or []):
+             return None, f"Invalid role: {role}"
 
         req = ClubRequest(
             club_id=club_id,
             user_id=user_id,
             message=message,
+            role=role,
             status='pending'
         )
 
@@ -192,7 +197,7 @@ class ClubService:
             # Add to members
             members = list(club.members) if club.members else []
             if not any(int(m['user_id']) == req.user_id for m in members):
-                members.append({'user_id': int(req.user_id), 'role': 'member'})
+                members.append({'user_id': int(req.user_id), 'role': req.role})
                 club.members = members
                 flag_modified(club, "members")
 

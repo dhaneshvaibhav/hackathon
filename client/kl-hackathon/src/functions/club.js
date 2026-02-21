@@ -123,7 +123,7 @@ export const deleteClub = async (token, clubId) => {
     }
 };
 
-export const requestJoinClub = async (token, clubId, message) => {
+export const requestJoinClub = async (token, clubId, message, role) => {
     try {
         const response = await fetch(`${API_URL}/${clubId}/join`, {
             method: 'POST',
@@ -131,7 +131,7 @@ export const requestJoinClub = async (token, clubId, message) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ message })
+            body: JSON.stringify({ message, role })
         });
         if (!response.ok) {
             const err = await response.json();

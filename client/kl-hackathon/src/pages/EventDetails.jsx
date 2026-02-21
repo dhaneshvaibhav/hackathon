@@ -83,11 +83,11 @@ const EventDetails = () => {
         <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh' }}>
             <main className="container" style={{ padding: '3rem 2rem' }}>
                 <button 
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigate('/dashboard')}
                     className="btn-secondary"
                     style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                 >
-                    <ArrowLeft size={16} /> Back
+                    <ArrowLeft size={16} /> Back to Dashboard
                 </button>
 
                 <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
@@ -215,7 +215,7 @@ const EventDetails = () => {
                             )}
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '3rem' }}>
+                        <div className="event-details-grid">
                             <div className="event-main-content">
                                 <div style={{ marginBottom: '3rem' }}>
                                     <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '2px solid #f1f5f9', paddingBottom: '0.5rem', display: 'inline-block' }}>About this Event</h2>
@@ -272,19 +272,6 @@ const EventDetails = () => {
                     </div>
                 </div>
             </main>
-            <style jsx>{`
-                @media (max-width: 1024px) {
-                    .event-main-content {
-                        grid-column: 1 / -1;
-                    }
-                    .event-sidebar {
-                        grid-column: 1 / -1;
-                    }
-                    div[style*="grid-template-columns: 1fr 350px"] {
-                        grid-template-columns: 1fr !important;
-                    }
-                }
-            `}</style>
         </div>
     );
 };

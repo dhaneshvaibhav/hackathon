@@ -46,23 +46,8 @@ const Clubs = () => {
     }, [navigate]);
 
     const handleJoinRequest = async (clubId) => {
-        const token = localStorage.getItem('token');
-        const message = prompt("Why do you want to join this club? (Optional)");
-        if (message === null) return; // Cancelled
-
-        try {
-            await requestJoinClub(token, clubId, message);
-            setSuccessMessage('Join request sent successfully!');
-            
-            // Refresh requests
-            const requests = await getMyRequests(token);
-            setMyRequests(requests);
-
-            setTimeout(() => setSuccessMessage(''), 3000);
-        } catch (err) {
-            setError(err.message || 'Failed to send join request');
-            setTimeout(() => setError(''), 3000);
-        }
+        // Redirect to club details for joining
+        navigate(`/clubs/${clubId}`);
     };
 
     const getClubStatus = (club) => {

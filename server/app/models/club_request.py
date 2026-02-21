@@ -7,6 +7,7 @@ class ClubRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     club_id = db.Column(db.Integer, db.ForeignKey('clubs.id'), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
     status = db.Column(db.String(20), default='pending')  # pending, accepted, rejected
     message = db.Column(db.Text, nullable=True)
     admin_response = db.Column(db.Text, nullable=True)
@@ -24,6 +25,7 @@ class ClubRequest(db.Model):
             'club_id': self.club_id,
             'user_name': self.user.name,
             'club_name': self.club.name,
+            'role': self.role,
             'status': self.status,
             'message': self.message,
             'admin_response': self.admin_response,
