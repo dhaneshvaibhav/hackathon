@@ -46,10 +46,11 @@ Represents an event organized by a club.
 | `description`   | Text          | Nullable                                      | Description of the event.                        |
 | `club_id`       | Integer       | Foreign Key (`clubs.id`), Not Null            | ID of the organizing club.                       |
 | `poster_url`    | String(255)   | Nullable                                      | URL to the event poster.                         |
-| `event_date`    | DateTime      | Not Null                                      | Date and time of the event.                      |
+| `start_date`    | DateTime      | Not Null                                      | Start date and time of the event.                |
+| `end_date`      | DateTime      | Not Null                                      | End date and time of the event.                  |
 | `location`      | String(255)   | Nullable                                      | Location of the event.                           |
 | `fee`           | Float         | Default: `0.0`                                | Entry fee for the event.                         |
-| `status`        | String(20)    | Default: `'upcoming'`                         | Status (upcoming, ongoing, completed, cancelled).|
+| `status`        | String(20)    | Default: `'upcoming'`                         | Status (upcoming, ongoing, completed). Auto-calc.|
 | `meta_data`     | JSON          | Nullable, Default: `{}`                       | Flexible data (tags, registration links, etc.).  |
 | `created_at`    | DateTime      | Default: `datetime.utcnow`                    | Timestamp of creation.                           |
 | `updated_at`    | DateTime      | Default: `datetime.utcnow`, OnUpdate: `utcnow`| Timestamp of last update.                        |
