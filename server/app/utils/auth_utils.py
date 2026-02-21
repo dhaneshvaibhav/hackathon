@@ -13,4 +13,5 @@ def verify_password(stored_hash, password):
 def create_token(identity):
     """Creates a JWT access token with a 30-day expiration."""
     expires = timedelta(days=30)
-    return create_access_token(identity=identity, expires_delta=expires)
+    # Ensure identity is a string as required by flask-jwt-extended
+    return create_access_token(identity=str(identity), expires_delta=expires)

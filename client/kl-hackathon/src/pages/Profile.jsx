@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Edit2, Trash2, Save, X } from 'lucide-react';
+import { User, Edit2, Trash2, Save, X, Github, Linkedin, Twitter, Instagram } from 'lucide-react';
 import { getUserProfile, updateUserProfile, deleteUserAccount } from '../functions/user';
 
 const Profile = () => {
@@ -8,7 +8,13 @@ const Profile = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({
         name: '',
-        bio: ''
+        bio: '',
+        social_media: {
+            github: '',
+            linkedin: '',
+            twitter: '',
+            instagram: ''
+        }
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
@@ -27,7 +33,13 @@ const Profile = () => {
                 setUser(userData);
                 setEditForm({
                     name: userData.name || '',
-                    bio: userData.bio || ''
+                    bio: userData.bio || '',
+                    social_media: {
+                        github: userData.social_media?.github || '',
+                        linkedin: userData.social_media?.linkedin || '',
+                        twitter: userData.social_media?.twitter || '',
+                        instagram: userData.social_media?.instagram || ''
+                    }
                 });
             } catch (err) {
                 setError('Failed to load profile. Please login again.');
@@ -68,6 +80,16 @@ const Profile = () => {
         }
     };
 
+    const handleSocialChange = (e) => {
+        setEditForm({
+            ...editForm,
+            social_media: {
+                ...editForm.social_media,
+                [e.target.name]: e.target.value
+            }
+        });
+    };
+
     if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading profile...</div>;
 
     return (
@@ -78,7 +100,7 @@ const Profile = () => {
                 {error && <div style={{ backgroundColor: '#fee2e2', color: 'red', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>{error}</div>}
 
                 <section style={{ backgroundColor: 'white', padding: '2.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', borderBottom: '1px solid #eee', paddingBottom: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
                         <h2 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 0 }}>
                             <div style={{ backgroundColor: 'var(--primary-light)', color: 'white', padding: '0.75rem', borderRadius: '50%', display: 'flex' }}>
                                 <User size={24} />
@@ -113,11 +135,68 @@ const Profile = () => {
                                     placeholder="Tell us a bit about yourself..."
                                 />
                             </div>
-                            <div style={{ display: 'flex', gap: '1rem' }}>
-                                <button type="submit" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+
+                            <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>Social Media Links</h3>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                                <div>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: 500 }}>
+                                        <Github size={16} /> GitHub
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="github"
+                                        value={editForm.social_media.github}
+                                        onChange={handleSocialChange}
+                                        placeholder="https://github.com/username"
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.9rem' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: 500 }}>
+                                        <Linkedin size={16} /> LinkedIn
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="linkedin"
+                                        value={editForm.social_media.linkedin}
+                                        onChange={handleSocialChange}
+                                        placeholder="https://linkedin.com/in/username"
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.9rem' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: 500 }}>
+                                        <Twitter size={16} /> Twitter / X
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="twitter"
+                                        value={editForm.social_media.twitter}
+                                        onChange={handleSocialChange}
+                                        placeholder="https://twitter.com/username"
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.9rem' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: 500 }}>
+                                        <Instagram size={16} /> Instagram
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="instagram"
+                                        value={editForm.social_media.instagram}
+                                        onChange={handleSocialChange}
+                                        placeholder="https://instagram.com/username"
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.9rem' }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                <button type="submit" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1 1 auto', justifyContent: 'center' }}>
                                     <Save size={18} /> Save Changes
                                 </button>
-                                <button type="button" onClick={() => setIsEditing(false)} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <button type="button" onClick={() => setIsEditing(false)} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1 1 auto', justifyContent: 'center' }}>
                                     <X size={18} /> Cancel
                                 </button>
                             </div>
@@ -140,13 +219,13 @@ const Profile = () => {
                                     <span style={{
                                         display: 'inline-block',
                                         padding: '0.35rem 0.85rem',
-                                        backgroundColor: user?.role === 'admin' ? '#fef3c7' : '#e0e7ff',
-                                        color: user?.role === 'admin' ? '#92400e' : '#3730a3',
+                                        backgroundColor: user?.is_admin ? '#fef3c7' : '#e0e7ff',
+                                        color: user?.is_admin ? '#92400e' : '#3730a3',
                                         borderRadius: '20px',
                                         fontSize: '0.875rem',
                                         fontWeight: 600
                                     }}>
-                                        {user?.role === 'admin' ? 'Club Leader' : 'Student'}
+                                        {user?.is_admin ? 'Club Leader' : 'Student'}
                                     </span>
                                 </div>
 
@@ -164,6 +243,35 @@ const Profile = () => {
                                         {user?.bio || 'You have not added a bio yet. Click Edit Profile to add one.'}
                                     </p>
                                 </div>
+
+                                {/* Social Media Display */}
+                                {user?.social_media && (user.social_media.github || user.social_media.linkedin || user.social_media.twitter || user.social_media.instagram) && (
+                                    <div style={{ marginTop: '0.5rem' }}>
+                                        <strong style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Social Links</strong>
+                                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                            {user.social_media.github && (
+                                                <a href={user.social_media.github} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#24292e', padding: '0.5rem 1rem', backgroundColor: '#f6f8fa', borderRadius: '20px', fontSize: '0.9rem', textDecoration: 'none' }}>
+                                                    <Github size={16} /> GitHub
+                                                </a>
+                                            )}
+                                            {user.social_media.linkedin && (
+                                                <a href={user.social_media.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0077b5', padding: '0.5rem 1rem', backgroundColor: '#e8f4f9', borderRadius: '20px', fontSize: '0.9rem', textDecoration: 'none' }}>
+                                                    <Linkedin size={16} /> LinkedIn
+                                                </a>
+                                            )}
+                                            {user.social_media.twitter && (
+                                                <a href={user.social_media.twitter} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1da1f2', padding: '0.5rem 1rem', backgroundColor: '#e8f5fe', borderRadius: '20px', fontSize: '0.9rem', textDecoration: 'none' }}>
+                                                    <Twitter size={16} /> Twitter
+                                                </a>
+                                            )}
+                                            {user.social_media.instagram && (
+                                                <a href={user.social_media.instagram} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#e1306c', padding: '0.5rem 1rem', backgroundColor: '#fcebf0', borderRadius: '20px', fontSize: '0.9rem', textDecoration: 'none' }}>
+                                                    <Instagram size={16} /> Instagram
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div style={{ borderTop: '1px solid #eee', marginTop: '3rem', paddingTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
