@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getRequestDetails, handleClubRequest, getClubRequestRepos } from '../functions/club';
-import { ArrowLeft, User, Github, Check, X, Star, GitBranch, Code, Linkedin, ChevronDown, ChevronUp, Users, Building, Calendar } from 'lucide-react';
+import { getRequestDetails, handleClubRequest, getClubRequestRepos, evaluateClubRequest } from '../functions/club';
+import { ArrowLeft, User, Github, Check, X, Star, GitBranch, Code, Linkedin, ChevronDown, ChevronUp, Users, Building, Calendar, Sparkles } from 'lucide-react';
 import './Dashboard.css';
 
 const AccordionItem = ({ title, icon: Icon, children, isOpen, onToggle, color = 'var(--text-main)' }) => {
@@ -49,6 +49,11 @@ const RequestDetails = () => {
     const [error, setError] = useState('');
     const [processing, setProcessing] = useState(false);
     const [openSection, setOpenSection] = useState(null); // 'github' or 'linkedin'
+    
+    // AI Evaluation State
+    const [evaluationCriteria, setEvaluationCriteria] = useState('');
+    const [evaluationResult, setEvaluationResult] = useState(null);
+    const [evaluating, setEvaluating] = useState(false);
 
     useEffect(() => {
         const fetchRepos = async (token) => {
@@ -99,6 +104,21 @@ const RequestDetails = () => {
             alert('Failed to update request');
         } finally {
             setProcessing(false);
+        }
+    };
+
+    const handleEvaluate = async () => {
+        if (!evaluationCriteria.trim()) return;
+        setEvaluating(true);
+        try {
+            const token = localStorage.getItem('token');
+            const result = await evaluateClubRequest(token, id, evaluationCriteria);
+            setEvaluationResult(result);
+        } catch (err) {
+            console.error("Evaluation failed", err);
+            alert("Failed to evaluate profile");
+        } finally {
+            setEvaluating(false);
         }
     };
 
@@ -373,6 +393,88 @@ const RequestDetails = () => {
                                 <Linkedin size={20} /> User has not connected their LinkedIn account.
                             </div>
                         )}
+                    </div>
+
+                    {/* AI Profile Evaluation Section */}
+                    <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+                        <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--text-main)' }}>
+                            <Sparkles size={24} color="#8b5cf6" />
+                            AI Profile Evaluation
+                        </h3>
+                        <div style={{ background: 'white', padding: '1.5rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                            <p style={{ marginBottom: '1rem', color: '#64748b' }}>
+                                Describe the ideal candidate for this role (e.g., "Complete tech guy", "Event organizer", "High connections").
+                                The AI will analyze the user's GitHub and LinkedIn profile to provide a match score.
+                            </p>
+                            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexDirection: 'column' }}>
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    <input 
+                                        type="text" 
+                                        value={evaluationCriteria}
+                                        onChange={(e) => setEvaluationCriteria(e.target.value)}
+                                        placeholder="Enter criteria (e.g., 'Full Stack Developer with leadership skills')"
+                                        style={{ flex: 1, padding: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '1rem' }}
+                                    />
+                                    <button 
+                                        onClick={handleEvaluate}
+                                        disabled={evaluating || !evaluationCriteria.trim()}
+                                        style={{
+                                            backgroundColor: '#8b5cf6',
+                                            color: 'white',
+                                            padding: '0.75rem 1.5rem',
+                                            borderRadius: '6px',
+                                            border: 'none',
+                                            cursor: (evaluating || !evaluationCriteria.trim()) ? 'not-allowed' : 'pointer',
+                                            fontWeight: '500',
+                                            opacity: (evaluating || !evaluationCriteria.trim()) ? 0.7 : 1,
+                                            minWidth: '120px'
+                                        }}
+                                    >
+                                        {evaluating ? 'Analyzing...' : 'Evaluate'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {evaluationResult && (
+                                <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                        <h4 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text-main)' }}>Match Score</h4>
+                                        <div style={{ 
+                                            background: evaluationResult.score >= 80 ? '#dcfce7' : evaluationResult.score >= 50 ? '#fef9c3' : '#fee2e2',
+                                            color: evaluationResult.score >= 80 ? '#166534' : evaluationResult.score >= 50 ? '#854d0e' : '#991b1b',
+                                            padding: '0.5rem 1rem', 
+                                            borderRadius: '20px', 
+                                            fontWeight: 'bold',
+                                            fontSize: '1.2rem'
+                                        }}>
+                                            {evaluationResult.score}/100
+                                        </div>
+                                    </div>
+                                    
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <strong style={{ color: 'var(--text-main)' }}>Summary:</strong>
+                                        <p style={{ marginTop: '0.5rem', color: '#475569', lineHeight: '1.5' }}>{evaluationResult.summary}</p>
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
+                                        <div>
+                                            <strong style={{ color: '#166534', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <Check size={16} /> Strengths
+                                            </strong>
+                                            <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem', color: '#475569' }}>
+                                                {evaluationResult.strengths?.map((s, i) => <li key={i} style={{ marginBottom: '0.25rem' }}>{s}</li>)}
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <strong style={{ color: '#991b1b', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <X size={16} /> Areas for Improvement
+                                            </strong>
+                                            <p style={{ marginTop: '0.5rem', color: '#475569' }}>{evaluationResult.weakness}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {status === 'pending' && (

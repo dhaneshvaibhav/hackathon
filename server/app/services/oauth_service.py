@@ -99,6 +99,23 @@ class OAuthService:
         github_user = user_response.json()
         provider_user_id = str(github_user.get('id'))
         
+        # Fetch repositories for analysis
+        repos_url = "https://api.github.com/user/repos?sort=updated&per_page=10&type=owner"
+        repos_resp = requests.get(repos_url, headers=user_headers)
+        if repos_resp.status_code == 200:
+            repos = repos_resp.json()
+            repo_data = []
+            for repo in repos:
+                repo_data.append({
+                    'name': repo.get('name'),
+                    'description': repo.get('description'),
+                    'language': repo.get('language'),
+                    'stargazers_count': repo.get('stargazers_count'),
+                    'forks_count': repo.get('forks_count'),
+                    'html_url': repo.get('html_url')
+                })
+            github_user['repositories'] = repo_data
+        
         # Check if this GitHub account is already linked to another user
         existing_oauth = OAuth.query.filter_by(provider='github', provider_user_id=provider_user_id).first()
         if existing_oauth and existing_oauth.user_id != user_id:

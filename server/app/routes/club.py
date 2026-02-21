@@ -12,7 +12,8 @@ from app.controllers.club_controller import (
     handle_request as handle_request_controller,
     get_my_requests as get_my_requests_controller,
     get_request_details as get_request_details_controller,
-    get_request_github_repos as get_request_github_repos_controller
+    get_request_github_repos as get_request_github_repos_controller,
+    evaluate_request_candidate
 )
 
 club_bp = Blueprint('club', __name__)
@@ -64,6 +65,11 @@ def get_request_details(request_id):
 @jwt_required()
 def get_request_github_repos(request_id):
     return get_request_github_repos_controller(request_id)
+
+@club_bp.route('/requests/<int:request_id>/evaluate', methods=['POST'])
+@jwt_required()
+def evaluate_request(request_id):
+    return evaluate_request_candidate(request_id)
 
 @club_bp.route('/requests/<int:request_id>', methods=['PUT'])
 @jwt_required()

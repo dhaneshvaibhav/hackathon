@@ -235,3 +235,24 @@ export const getClubRequestRepos = async (token, requestId) => {
         throw error;
     }
 };
+
+export const evaluateClubRequest = async (token, requestId, criteria) => {
+    try {
+        const response = await fetch(`${API_URL}/requests/${requestId}/evaluate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ criteria })
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || 'Failed to evaluate profile');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};

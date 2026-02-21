@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from flask_jwt_extended import get_jwt_identity
 from app.services.club_service import ClubService
+from app.services.ai_service import AIService
 
 def get_all_clubs():
     clubs = ClubService.get_all_clubs()
@@ -133,3 +134,27 @@ def get_request_github_repos(request_id):
         return jsonify({'error': error}), status_code
         
     return jsonify(repos), 200
+
+def evaluate_request_candidate(request_id):
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+    criteria = data.get('criteria')
+    
+    if not criteria:
+        return jsonify({'error': 'Criteria is required'}), 400
+        
+    # First, verify the request and permissions (using ClubService logic)
+    # Re-using get_request_details to ensure the user is the club owner
+    req, error = ClubService.get_request_details(request_id, current_user_id)
+    
+    if error:
+        status_code = 403 if "Unauthorized" in error else 404
+        return jsonify({'error': error}), status_code
+    
+    # Evaluate the user who made the request
+    result, ai_error = AIService.evaluate_profile(req.user_id, criteria)
+    
+    if ai_error:
+        return jsonify({'error': ai_error}), 500
+        
+    return jsonify(result), 200
