@@ -478,3 +478,86 @@ Base URL: `http://localhost:5000`
   "message": "Event deleted successfully"
 }
 ```
+
+---
+
+## 📢 Announcements
+
+### Get Event Announcements
+**Endpoint:** `GET /api/announcements/event/:event_id`
+**Description:** Get all announcements for a specific event.
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "event_id": 2,
+    "title": "Change of Venue",
+    "content": "The event will now be held in Room 101 due to maintenance.",
+    "created_at": "2024-04-09T10:00:00Z",
+    "updated_at": "2024-04-09T10:00:00Z"
+  }
+]
+```
+
+### Create Announcement (Protected - Owner Only)
+**Endpoint:** `POST /api/announcements`
+**Headers:** `Authorization: Bearer <token>`
+**Description:** Create a new announcement for an event. Must be the owner of the club hosting the event.
+
+**Request Body:**
+```json
+{
+  "event_id": 2,
+  "title": "Speaker Delay",
+  "content": "The main speaker will be arriving 15 minutes late."
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": 2,
+  "event_id": 2,
+  "title": "Speaker Delay",
+  "content": "The main speaker will be arriving 15 minutes late.",
+  "created_at": "2024-04-10T13:45:00Z",
+  "updated_at": "2024-04-10T13:45:00Z"
+}
+```
+
+### Update Announcement (Protected - Owner Only)
+**Endpoint:** `PUT /api/announcements/:id`
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+```json
+{
+  "title": "Speaker Delay (Updated)",
+  "content": "The speaker has arrived, we start in 5 mins."
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": 2,
+  "event_id": 2,
+  "title": "Speaker Delay (Updated)",
+  "content": "The speaker has arrived, we start in 5 mins.",
+  "created_at": "2024-04-10T13:45:00Z",
+  "updated_at": "2024-04-10T14:00:00Z"
+}
+```
+
+### Delete Announcement (Protected - Owner Only)
+**Endpoint:** `DELETE /api/announcements/:id`
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200 OK):**
+```json
+{
+  "message": "Announcement deleted successfully"
+}
+```

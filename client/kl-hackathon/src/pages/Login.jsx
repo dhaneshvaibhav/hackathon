@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import { validateInstitutionalEmail } from '../functions/authValidation';
 import { loginUser } from '../functions/auth';
@@ -13,6 +13,7 @@ const Login = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleChange = (e) => {
         setFormData({
@@ -39,15 +40,22 @@ const Login = () => {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
 
-            // Redirect based on role
-            if (data.user.is_admin) {
-                navigate('/admin');
-            } else if (!data.user.bio) {
-                // Redirect to profile for first-time setup (if bio is missing)
-                navigate('/profile?onboarding=true');
-            } else {
-                navigate('/dashboard');
+            // Redirect logic merging both requirements:
+            // 1. Redirect back to previous location if available (from ProtectedRoute)
+            // 2. Otherwise, check for admin role or missing bio (onboarding)
+            let from = location.state?.from?.pathname;
+            
+            if (!from) {
+                if (data.user.is_admin) {
+                    from = '/admin';
+                } else if (!data.user.bio) {
+                    from = '/profile?onboarding=true';
+                } else {
+                    from = '/dashboard';
+                }
             }
+
+            navigate(from, { replace: true });
         } catch (err) {
             setError(err.message);
         } finally {
