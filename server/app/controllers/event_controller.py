@@ -1,7 +1,6 @@
-from flask import Blueprint, jsonify, request
+from flask import jsonify, request
 from flask_jwt_extended import get_jwt_identity
 from app.services.event_service import EventService
-from app.models.event import Event
 
 class EventController:
     @staticmethod

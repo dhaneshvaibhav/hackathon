@@ -51,7 +51,7 @@ class EventService:
                 return None, "Invalid date format. Use ISO 8601 format."
 
             # Determine status based on dates
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc).replace(tzinfo=None)
             if now < start_date:
                 status = 'upcoming'
             elif start_date <= now <= end_date:
@@ -111,7 +111,7 @@ class EventService:
         ).all()
 
     @staticmethod
-  def update_event(event_id, data, user_id):
+    def update_event(event_id, data, user_id):
         """
         Update an existing event.
         :param event_id: ID of the event to update
@@ -160,7 +160,7 @@ class EventService:
                     event.end_date = parse_to_naive_utc(data['end_date'])
                 
                 # Update status
-                now = datetime.utcnow()
+                now = datetime.now(timezone.utc).replace(tzinfo=None)
                 if now < event.start_date:
                     event.status = 'upcoming'
                 elif event.start_date <= now <= event.end_date:
