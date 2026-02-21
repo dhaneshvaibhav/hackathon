@@ -203,6 +203,22 @@ Base URL: `http://localhost:5000`
 ]
 ```
 
+### Get Club Details
+**Endpoint:** `GET /api/clubs/:id`
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "name": "Coding Club",
+  "description": "A community for coders.",
+  "logo_url": "https://example.com/logo.png",
+  "category": "Tech",
+  "owner_id": 5,
+  "members": []
+}
+```
+
 ### Create Club (Protected)
 **Endpoint:** `POST /api/clubs`  
 **Headers:** `Authorization: Bearer <token>`
@@ -267,12 +283,14 @@ Base URL: `http://localhost:5000`
 **Endpoint:** `POST /api/clubs/:id/join`  
 **Headers:** `Authorization: Bearer <token>`
 
-**Request Body (Optional):**
+**Request Body:**
 ```json
 {
-  "message": "I would love to join because..."
+  "message": "I would love to join because...",
+  "role": "member"
 }
 ```
+*Note: `role` is required and typically "member".*
 
 **Response (201 Created):**
 ```json
@@ -281,7 +299,8 @@ Base URL: `http://localhost:5000`
   "user_id": 5,
   "club_id": 1,
   "status": "pending",
-  "message": "I would love to join because..."
+  "message": "I would love to join because...",
+  "role": "member"
 }
 ```
 
@@ -483,6 +502,24 @@ Base URL: `http://localhost:5000`
 
 ## 📢 Announcements
 
+### Get All Announcements
+**Endpoint:** `GET /api/announcements`
+**Description:** Get all announcements.
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "event_id": 2,
+    "title": "Change of Venue",
+    "content": "The event will now be held in Room 101 due to maintenance.",
+    "created_at": "2024-04-09T10:00:00Z",
+    "updated_at": "2024-04-09T10:00:00Z"
+  }
+]
+```
+
 ### Get Event Announcements
 **Endpoint:** `GET /api/announcements/event/:event_id`
 **Description:** Get all announcements for a specific event.
@@ -559,5 +596,124 @@ Base URL: `http://localhost:5000`
 ```json
 {
   "message": "Announcement deleted successfully"
+}
+```
+
+---
+
+## 🔑 OAuth
+
+### Connect GitHub
+**Endpoint:** `GET /api/oauth/github/connect`
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200 OK):**
+```json
+{
+  "url": "https://github.com/login/oauth/authorize?client_id=..."
+}
+```
+
+### GitHub Callback
+**Endpoint:** `POST /api/oauth/github/callback`
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+```json
+{
+  "code": "auth_code_from_github"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "GitHub connected successfully",
+  "data": {
+    "provider": "github",
+    "provider_user_id": "12345",
+    "username": "praneeth",
+    "access_token": "gho_..."
+  }
+}
+```
+
+### Disconnect GitHub
+**Endpoint:** `DELETE /api/oauth/github/disconnect`
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200 OK):**
+```json
+{
+  "message": "GitHub disconnected successfully"
+}
+```
+
+### Connect LinkedIn
+**Endpoint:** `GET /api/oauth/linkedin/connect`
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200 OK):**
+```json
+{
+  "url": "https://www.linkedin.com/oauth/v2/authorization?client_id=..."
+}
+```
+
+### LinkedIn Callback
+**Endpoint:** `POST /api/oauth/linkedin/callback`
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+```json
+{
+  "code": "auth_code_from_linkedin"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "LinkedIn connected successfully",
+  "data": {
+    "provider": "linkedin",
+    "provider_user_id": "12345",
+    "username": "praneeth",
+    "access_token": "AQU..."
+  }
+}
+```
+
+### Disconnect LinkedIn
+**Endpoint:** `DELETE /api/oauth/linkedin/disconnect`
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200 OK):**
+```json
+{
+  "message": "LinkedIn disconnected successfully"
+}
+```
+
+---
+
+## 📤 Upload
+
+### Upload Media
+**Endpoint:** `POST /api/upload/`
+**Headers:** 
+- `Authorization: Bearer <token>`
+- `Content-Type: multipart/form-data`
+
+**Request Body:**
+- `file`: The file to upload.
+
+**Response (201 Created):**
+```json
+{
+  "url": "https://res.cloudinary.com/demo/image/upload/v1570979139/sample.jpg",
+  "public_id": "sample",
+  "format": "jpg",
+  "resource_type": "image"
 }
 ```

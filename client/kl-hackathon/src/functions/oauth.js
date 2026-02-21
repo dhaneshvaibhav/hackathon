@@ -1,87 +1,99 @@
-import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = API_BASE_URL;
+
+const handleResponse = async (response, errorMessage) => {
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || errorMessage);
+    }
+    return data;
+};
 
 export const connectGithub = async (token) => {
     try {
-        const response = await axios.get(`${API_URL}/oauth/github/connect`, {
+        const response = await fetch(`${API_URL}/oauth/github/connect`, {
+            method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`
             }
         });
-        return response.data;
+        return handleResponse(response, 'Failed to initiate GitHub connection');
     } catch (error) {
-        throw new Error(error.response?.data?.error || 'Failed to initiate GitHub connection');
+        throw error;
     }
 };
 
 export const handleGithubCallback = async (token, code) => {
     try {
-        const response = await axios.post(`${API_URL}/oauth/github/callback`, 
-            { code },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-        );
-        return response.data;
+        const response = await fetch(`${API_URL}/oauth/github/callback`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code })
+        });
+        return handleResponse(response, 'Failed to connect GitHub account');
     } catch (error) {
-        throw new Error(error.response?.data?.error || 'Failed to connect GitHub account');
+        throw error;
     }
 };
 
 export const disconnectGithub = async (token) => {
     try {
-        const response = await axios.delete(`${API_URL}/oauth/github/disconnect`, {
+        const response = await fetch(`${API_URL}/oauth/github/disconnect`, {
+            method: 'DELETE',
             headers: {
                 Authorization: `Bearer ${token}`
             }
         });
-        return response.data;
+        return handleResponse(response, 'Failed to disconnect GitHub account');
     } catch (error) {
-        throw new Error(error.response?.data?.error || 'Failed to disconnect GitHub account');
+        throw error;
     }
 };
 
 export const connectLinkedin = async (token) => {
     try {
-        const response = await axios.get(`${API_URL}/oauth/linkedin/connect`, {
+        const response = await fetch(`${API_URL}/oauth/linkedin/connect`, {
+            method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`
             }
         });
-        return response.data;
+        return handleResponse(response, 'Failed to initiate LinkedIn connection');
     } catch (error) {
-        throw new Error(error.response?.data?.error || 'Failed to initiate LinkedIn connection');
+        throw error;
     }
 };
 
 export const handleLinkedinCallback = async (token, code) => {
     try {
-        const response = await axios.post(`${API_URL}/oauth/linkedin/callback`, 
-            { code },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-        );
-        return response.data;
+        const response = await fetch(`${API_URL}/oauth/linkedin/callback`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code })
+        });
+        return handleResponse(response, 'Failed to connect LinkedIn account');
     } catch (error) {
-        throw new Error(error.response?.data?.error || 'Failed to connect LinkedIn account');
+        throw error;
     }
 };
 
 export const disconnectLinkedin = async (token) => {
     try {
-        const response = await axios.delete(`${API_URL}/oauth/linkedin/disconnect`, {
+        const response = await fetch(`${API_URL}/oauth/linkedin/disconnect`, {
+            method: 'DELETE',
             headers: {
                 Authorization: `Bearer ${token}`
             }
         });
-        return response.data;
+        return handleResponse(response, 'Failed to disconnect LinkedIn account');
     } catch (error) {
-        throw new Error(error.response?.data?.error || 'Failed to disconnect LinkedIn account');
+        throw error;
     }
 };
