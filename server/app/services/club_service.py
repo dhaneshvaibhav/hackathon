@@ -177,6 +177,19 @@ class ClubService:
         return ClubRequest.query.filter_by(club_id=club_id).all(), None
 
     @staticmethod
+    def get_request_details(request_id, user_id):
+        user_id = int(user_id)
+        req = ClubRequest.query.get(request_id)
+        if not req:
+            return None, "Request not found"
+        
+        club = req.club
+        if club.owner_id != user_id:
+             return None, "Unauthorized"
+
+        return req, None
+
+    @staticmethod
     def handle_request(request_id, status, admin_response, admin_id):
         admin_id = int(admin_id)
         req = ClubRequest.query.get(request_id)

@@ -10,7 +10,8 @@ from app.controllers.club_controller import (
     request_join as request_join_controller,
     get_requests as get_requests_controller,
     handle_request as handle_request_controller,
-    get_my_requests as get_my_requests_controller
+    get_my_requests as get_my_requests_controller,
+    get_request_details as get_request_details_controller
 )
 
 club_bp = Blueprint('club', __name__)
@@ -52,6 +53,11 @@ def request_join(club_id):
 @jwt_required()
 def get_requests(club_id):
     return get_requests_controller(club_id)
+
+@club_bp.route('/requests/<int:request_id>', methods=['GET'])
+@jwt_required()
+def get_request_details(request_id):
+    return get_request_details_controller(request_id)
 
 @club_bp.route('/requests/<int:request_id>', methods=['PUT'])
 @jwt_required()
