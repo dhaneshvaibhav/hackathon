@@ -1,5 +1,7 @@
+import { API_BASE_URL } from '../config';
+
 // API base URL
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = API_BASE_URL;
 
 /**
  * Upload a file to the server (which uploads to Cloudinary)

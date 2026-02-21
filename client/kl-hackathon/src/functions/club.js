@@ -1,13 +1,19 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import { API_BASE_URL as BASE_URL } from '../config';
+
 const API_URL = `${BASE_URL}/clubs`;
 
-export const getClubs = async () => {
+export const getClubs = async (token = null) => {
     try {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(`${API_URL}/`, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: headers,
         });
         if (!response.ok) throw new Error('Failed to fetch clubs');
         return await response.json();

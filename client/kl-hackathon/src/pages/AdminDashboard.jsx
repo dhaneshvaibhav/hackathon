@@ -55,7 +55,7 @@ const AdminDashboard = () => {
                 setClubs(clubsData);
 
                 // Fetch all events and filter for managed clubs
-                const allEvents = await getEvents();
+                const allEvents = await getEvents(token);
                 // Get IDs of managed clubs
                 const managedClubIds = clubsData.map(club => club.id);
                 // Filter events that belong to one of the managed clubs

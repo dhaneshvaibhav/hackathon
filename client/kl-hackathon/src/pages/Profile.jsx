@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Edit2, Trash2, Save, X, Github, Linkedin, Twitter, Instagram, Shield, LogOut } from 'lucide-react';
 import { getUserProfile, updateUserProfile, deleteUserAccount, becomeCreator } from '../functions/user';
 
@@ -19,6 +19,9 @@ const Profile = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const isOnboarding = searchParams.get('onboarding') === 'true';
 
     useEffect(() => {
         const fetchProfile = async () => {
