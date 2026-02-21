@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { Menu, Search, Bell, X, Check, User, Shield, PlusCircle } from 'lucide-react';
 import { getManagedClubs, getClubRequests, handleClubRequest, getMyRequests } from '../functions/club';
 import { getUserProfile, becomeCreator } from '../functions/user';
@@ -194,25 +194,24 @@ const DashboardLayout = () => {
                                                                 "{notification.message}"
                                                             </p>
                                                         )}
-                                                        <div className="notification-actions">
-                                                            <button 
-                                                                className="btn-accept"
-                                                                onClick={() => {
-                                                                    const msg = prompt("Message for user (optional):", "Welcome!");
-                                                                    if (msg !== null) onHandleRequest(notification.id, notification.club_id, 'accepted', msg);
+                                                        <div className="notification-actions" style={{ marginTop: '0.75rem' }}>
+                                                            <Link 
+                                                                to={`/requests/${notification.id}`}
+                                                                onClick={() => setShowNotifications(false)}
+                                                                style={{
+                                                                    display: 'inline-block',
+                                                                    padding: '0.4rem 0.8rem',
+                                                                    backgroundColor: '#4f46e5',
+                                                                    color: 'white',
+                                                                    borderRadius: '4px',
+                                                                    textDecoration: 'none',
+                                                                    fontSize: '0.85rem',
+                                                                    fontWeight: '500',
+                                                                    textAlign: 'center'
                                                                 }}
                                                             >
-                                                                Accept
-                                                            </button>
-                                                            <button 
-                                                                className="btn-reject"
-                                                                onClick={() => {
-                                                                    const msg = prompt("Reason for rejection:", "Sorry, not accepting new members.");
-                                                                    if (msg !== null) onHandleRequest(notification.id, notification.club_id, 'rejected', msg);
-                                                                }}
-                                                            >
-                                                                Reject
-                                                            </button>
+                                                                View Details
+                                                            </Link>
                                                         </div>
                                                     </>
                                                 ) : (

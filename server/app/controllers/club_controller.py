@@ -84,6 +84,21 @@ def get_requests(club_id):
         
     return jsonify([r.to_dict() for r in requests]), 200
 
+def get_request_details(request_id):
+    current_user_id = get_jwt_identity()
+    req, error = ClubService.get_request_details(request_id, current_user_id)
+    
+    if error:
+        status_code = 403 if "Unauthorized" in error else 404
+        return jsonify({'error': error}), status_code
+    
+    # Construct detailed response
+    user = req.user
+    response = req.to_dict()
+    response['user_details'] = user.to_dict() # This includes oauth_accounts
+    
+    return jsonify(response), 200
+
 def handle_request(request_id):
     current_user_id = get_jwt_identity()
     data = request.get_json()
@@ -108,3 +123,13 @@ def get_my_requests():
     current_user_id = get_jwt_identity()
     requests = ClubService.get_user_requests(current_user_id)
     return jsonify([r.to_dict() for r in requests]), 200
+
+def get_request_github_repos(request_id):
+    current_user_id = get_jwt_identity()
+    repos, error = ClubService.get_user_github_repos(request_id, current_user_id)
+    
+    if error:
+        status_code = 403 if "Unauthorized" in error else 400
+        return jsonify({'error': error}), status_code
+        
+    return jsonify(repos), 200

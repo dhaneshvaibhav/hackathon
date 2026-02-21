@@ -18,6 +18,7 @@ import ClubDetails from './pages/ClubDetails';
 import OAuthCallback from './pages/OAuthCallback';
 
 import EditClub from './pages/EditClub';
+import RequestDetails from './pages/RequestDetails';
 
 
 import './App.css';
@@ -50,6 +51,7 @@ function App() {
                     <Route path="/events" element={<Events />} />
                     <Route path="/events/:id" element={<EventDetails />} />
                     <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/requests/:id" element={<RequestDetails />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/oauth/callback" element={<OAuthCallback />} />
                 </Route>

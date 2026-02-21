@@ -201,3 +201,37 @@ export const getMyRequests = async (token) => {
         throw error;
     }
 };
+
+export const getRequestDetails = async (token, requestId) => {
+    try {
+        const response = await fetch(`${API_URL}/requests/${requestId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+        if (!response.ok) throw new Error('Failed to fetch request details');
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
+export const getClubRequestRepos = async (token, requestId) => {
+    try {
+        const response = await fetch(`${API_URL}/requests/${requestId}/github-repos`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+        if (!response.ok) throw new Error('Failed to fetch github repos');
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
