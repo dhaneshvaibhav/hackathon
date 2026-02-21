@@ -10,7 +10,8 @@ class Event(db.Model):
     description = db.Column(db.Text, nullable=True)
     club_id = db.Column(db.Integer, db.ForeignKey('clubs.id'), nullable=False)
     poster_url = db.Column(db.String(255), nullable=True)
-    event_date = db.Column(db.DateTime, nullable=False)
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime, nullable=False)
     location = db.Column(db.String(255), nullable=True)
     fee = db.Column(db.Float, default=0.0)
     status = db.Column(db.String(20), default='upcoming')  # upcoming, ongoing, completed, cancelled
@@ -29,7 +30,8 @@ class Event(db.Model):
             'description': self.description,
             'club_id': self.club_id,
             'poster_url': self.poster_url,
-            'event_date': self.event_date.isoformat(),
+            'start_date': self.start_date.isoformat(),
+            'end_date': self.end_date.isoformat(),
             'location': self.location,
             'fee': self.fee,
             'status': self.status,
