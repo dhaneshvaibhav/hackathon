@@ -265,7 +265,7 @@ const Profile = () => {
                 
                 {isConnected && accountInfo && accountInfo.meta_data && (
                     <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#F8FAFC', borderRadius: '8px', width: '100%' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
                             {accountInfo.meta_data.picture && (
                                 <img src={accountInfo.meta_data.picture} alt="Profile" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
                             )}
@@ -280,6 +280,53 @@ const Profile = () => {
                                 )}
                             </div>
                         </div>
+
+                        {/* GitHub Specific Data */}
+                        {accountInfo.provider === 'github' && (
+                            <div style={{ marginTop: '1rem', borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }}>
+                                {accountInfo.meta_data.followers_list && accountInfo.meta_data.followers_list.length > 0 && (
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <h4 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem' }}>Recent Followers</h4>
+                                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                            {accountInfo.meta_data.followers_list.slice(0, 8).map(follower => (
+                                                <a key={follower.id} href={follower.html_url} target="_blank" rel="noopener noreferrer" title={follower.login}>
+                                                    <img src={follower.avatar_url} alt={follower.login} style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid #E2E8F0' }} />
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* LinkedIn Specific Data */}
+                        {accountInfo.provider === 'linkedin' && accountInfo.meta_data.organizations && accountInfo.meta_data.organizations.length > 0 && (
+                            <div style={{ marginTop: '1rem', borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }}>
+                                <h4 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem' }}>Managed Organizations</h4>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    {accountInfo.meta_data.organizations.map(org => (
+                                        <div key={org.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem', backgroundColor: 'white', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                                            {org.logo ? (
+                                                <img src={org.logo} alt={org.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                                            ) : (
+                                                <div style={{ width: '40px', height: '40px', backgroundColor: '#CBD5E1', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
+                                                    {org.name.charAt(0)}
+                                                </div>
+                                            )}
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{org.name}</div>
+                                                {org.follower_stats && (
+                                                    <div style={{ fontSize: '0.8rem', color: '#64748B' }}>
+                                                        {org.follower_stats.follower_count} followers 
+                                                        {org.follower_stats.organic_follower_count > 0 && ` (${org.follower_stats.organic_follower_count} organic)`}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

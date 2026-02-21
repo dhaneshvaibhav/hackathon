@@ -29,7 +29,16 @@ const OAuthCallback = () => {
             }
 
             if (!code) {
-                setError('No authorization code received');
+                // If there's an error in the query parameters from the provider
+                const error = searchParams.get('error');
+                const errorDescription = searchParams.get('error_description');
+                
+                if (error) {
+                    setError(`Provider Error: ${errorDescription || error}`);
+                } else {
+                    setError('No authorization code received');
+                }
+                
                 setTimeout(() => navigate('/profile'), 3000);
                 return;
             }
