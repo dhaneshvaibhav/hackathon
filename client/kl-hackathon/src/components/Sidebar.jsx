@@ -27,7 +27,7 @@ const Sidebar = () => {
     // Using string 'null' parse fallback if user doesn't exist to prevent crash
     const userString = localStorage.getItem('user');
     const user = userString ? JSON.parse(userString) : null;
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = user?.is_admin;
 
     return (
         <>

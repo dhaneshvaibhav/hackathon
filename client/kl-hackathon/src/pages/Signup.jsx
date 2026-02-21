@@ -10,7 +10,6 @@ const Signup = () => {
         firstName: '',
         lastName: '',
         email: '',
-        role: '',
         password: ''
     });
     const [error, setError] = useState('');
@@ -80,15 +79,6 @@ const Signup = () => {
                             onChange={handleChange}
                             required
                         />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="role">I am a...</label>
-                        <select id="role" value={formData.role} onChange={handleChange} required>
-                            <option value="">Select your role</option>
-                            <option value="student">Student</option>
-                            <option value="club_leader">Club Leader</option>
-                        </select>
                     </div>
 
                     <div className="form-group">
