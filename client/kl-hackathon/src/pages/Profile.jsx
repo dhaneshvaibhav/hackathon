@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Edit2, Trash2, Save, X, Github, Linkedin, Twitter, Instagram, Shield, LogOut } from 'lucide-react';
 import { getUserProfile, updateUserProfile, deleteUserAccount, becomeCreator } from '../functions/user';
+import { connectGithub, disconnectGithub, connectLinkedin, disconnectLinkedin } from '../functions/oauth';
 
 const Profile = () => {
     const [user, setUser] = useState(null);
@@ -119,6 +120,60 @@ const Profile = () => {
 
     const initial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
 
+    const handleGithubConnect = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const data = await connectGithub(token);
+            if (data.url) {
+                window.location.href = data.url;
+            }
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    const handleGithubDisconnect = async () => {
+        if (!window.confirm('Are you sure you want to disconnect your GitHub account?')) return;
+        
+        const token = localStorage.getItem('token');
+        try {
+            await disconnectGithub(token);
+            // Refresh profile to show updated status
+            const userData = await getUserProfile(token);
+            setUser(userData);
+            alert('GitHub disconnected successfully');
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    const handleLinkedinConnect = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const data = await connectLinkedin(token);
+            if (data.url) {
+                window.location.href = data.url;
+            }
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    const handleLinkedinDisconnect = async () => {
+        if (!window.confirm('Are you sure you want to disconnect your LinkedIn account?')) return;
+        
+        const token = localStorage.getItem('token');
+        try {
+            await disconnectLinkedin(token);
+            // Refresh profile to show updated status
+            const userData = await getUserProfile(token);
+            setUser(userData);
+            alert('LinkedIn disconnected successfully');
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
     const renderEditableField = (field, label, value, placeholder, isTextArea = false) => {
         // We use a simplified inline editing state for individual fields to match the UI concept
         // But since the current state management is form-based, we'll adapt the UI to trigger the full edit mode
@@ -126,6 +181,27 @@ const Profile = () => {
         // Given the request "content should be not changes, just the how the things seeem",
         // we will restructure the display to look like the "Settings" page with cards.
         
+        const isGithub = field === 'github';
+        const isLinkedin = field === 'linkedin';
+        
+        let isConnected = false;
+        let accountInfo = null;
+        
+        if (isGithub) {
+            accountInfo = user?.oauth_accounts?.find(acc => acc.provider === 'github');
+            isConnected = !!accountInfo;
+        } else if (isLinkedin) {
+            accountInfo = user?.oauth_accounts?.find(acc => acc.provider === 'linkedin');
+            isConnected = !!accountInfo;
+        } else {
+            isConnected = !!value;
+        }
+
+        const displayValue = (isGithub || isLinkedin) && isConnected ? 'Connected' : (value || 'Not connected');
+
+        const handleConnect = isGithub ? handleGithubConnect : isLinkedin ? handleLinkedinConnect : undefined;
+        const handleDisconnect = isGithub ? handleGithubDisconnect : isLinkedin ? handleLinkedinDisconnect : undefined;
+
         return (
             <div style={{ 
                 marginBottom: '1rem', 
@@ -134,40 +210,78 @@ const Profile = () => {
                 borderRadius: '12px', 
                 border: '1px solid #E2E8F0',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
+                flexDirection: 'column',
                 transition: 'box-shadow 0.2s ease-in-out',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
             }}>
-                <div style={{ flex: 1, marginRight: '1rem', display: 'flex', alignItems: 'center' }}>
-                     <div style={{ width: '180px', color: 'var(--text-main)', fontWeight: 600, fontSize: '1rem' }}>
-                        {label}
-                     </div>
-                     <div style={{ flex: 1, color: value ? 'var(--text-muted)' : '#94a3b8', fontSize: '0.95rem' }}>
-                        {value || 'Not connected'}
-                     </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <div style={{ flex: 1, marginRight: '1rem', display: 'flex', alignItems: 'center' }}>
+                         <div style={{ width: '180px', color: 'var(--text-main)', fontWeight: 600, fontSize: '1rem' }}>
+                            {label}
+                         </div>
+                         <div style={{ flex: 1, color: isConnected ? 'var(--text-muted)' : '#94a3b8', fontSize: '0.95rem' }}>
+                            {displayValue}
+                         </div>
+                    </div>
+                    
+                    {isGithub || isLinkedin ? (
+                        <button
+                            onClick={isConnected ? handleDisconnect : handleConnect}
+                            style={{ 
+                                padding: '0.5rem 1.25rem',
+                                backgroundColor: isConnected ? 'transparent' : 'var(--primary)',
+                                color: isConnected ? 'var(--text-main)' : 'white',
+                                border: isConnected ? '1px solid #E2E8F0' : 'none',
+                                borderRadius: '6px',
+                                fontWeight: 600,
+                                fontSize: '0.875rem',
+                                cursor: 'pointer',
+                                minWidth: '100px',
+                                textAlign: 'center'
+                            }}
+                        >
+                            {isConnected ? 'Disconnect' : 'Connect'}
+                        </button>
+                    ) : (
+                        <button
+                             onClick={() => setIsEditing(true)}
+                             style={{ 
+                                padding: '0.5rem 1.25rem',
+                                backgroundColor: value ? 'transparent' : 'var(--primary)',
+                                color: value ? 'var(--text-main)' : 'white',
+                                border: value ? '1px solid #E2E8F0' : 'none',
+                                borderRadius: '6px',
+                                fontWeight: 600,
+                                fontSize: '0.875rem',
+                                cursor: 'pointer',
+                                minWidth: '100px',
+                                textAlign: 'center'
+                            }}
+                        >
+                            {value ? 'Edit' : 'Connect'}
+                        </button>
+                    )}
                 </div>
                 
-                <button
-                    onClick={() => {
-                        setIsEditing(true);
-                        // Optional: focus specific field if we were to implement detailed focus logic
-                    }}
-                    style={{ 
-                        padding: '0.5rem 1.25rem',
-                        backgroundColor: value ? 'transparent' : 'var(--primary)',
-                        color: value ? 'var(--text-main)' : 'white',
-                        border: value ? '1px solid #E2E8F0' : 'none',
-                        borderRadius: '6px',
-                        fontWeight: 600,
-                        fontSize: '0.875rem',
-                        cursor: 'pointer',
-                        minWidth: '100px',
-                        textAlign: 'center'
-                    }}
-                >
-                    {value ? 'Reconnect' : 'Connect'}
-                </button>
+                {isConnected && accountInfo && accountInfo.meta_data && (
+                    <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#F8FAFC', borderRadius: '8px', width: '100%' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            {accountInfo.meta_data.picture && (
+                                <img src={accountInfo.meta_data.picture} alt="Profile" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+                            )}
+                            <div>
+                                {accountInfo.meta_data.name && <div style={{ fontWeight: 600 }}>{accountInfo.meta_data.name}</div>}
+                                {accountInfo.meta_data.email && <div style={{ fontSize: '0.85rem', color: '#64748B' }}>{accountInfo.meta_data.email}</div>}
+                                {accountInfo.provider === 'github' && accountInfo.meta_data.login && (
+                                    <div style={{ fontSize: '0.85rem', color: '#64748B' }}>@{accountInfo.meta_data.login}</div>
+                                )}
+                                {accountInfo.provider === 'github' && accountInfo.meta_data.followers !== undefined && (
+                                    <div style={{ fontSize: '0.85rem', color: '#64748B' }}>Followers: {accountInfo.meta_data.followers}</div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     };
