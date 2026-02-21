@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import get_jwt_identity
 from app.services.event_service import EventService
 from app.models.event import Event
 
@@ -12,11 +13,12 @@ class EventController:
         if not data:
             return jsonify({"error": "No input data provided"}), 400
 
-        # Optional: Add user authorization check here
+        user_id = get_jwt_identity()
         
-        event, error = EventService.create_event(data)
+        event, error = EventService.create_event(data, user_id)
         if error:
-            return jsonify({"error": error}), 400
+            status_code = 403 if "Unauthorized" in error else 400
+            return jsonify({"error": error}), status_code
         
         return jsonify({
             "message": "Event created successfully",
@@ -51,9 +53,12 @@ class EventController:
         if not data:
             return jsonify({"error": "No input data provided"}), 400
 
-        event, error = EventService.update_event(event_id, data)
+        user_id = get_jwt_identity()
+
+        event, error = EventService.update_event(event_id, data, user_id)
         if error:
-            return jsonify({"error": error}), 400
+            status_code = 403 if "Unauthorized" in error else 400
+            return jsonify({"error": error}), status_code
         if not event:
             return jsonify({"error": "Event not found"}), 404
 
@@ -67,10 +72,12 @@ class EventController:
         """
         Delete an event.
         """
-        success, error = EventService.delete_event(event_id)
+        user_id = get_jwt_identity()
+        success, error = EventService.delete_event(event_id, user_id)
         if not success:
             if error == "Event not found":
                 return jsonify({"error": "Event not found"}), 404
-            return jsonify({"error": error}), 500
+            status_code = 403 if "Unauthorized" in error else 500
+            return jsonify({"error": error}), status_code
         
         return jsonify({"message": "Event deleted successfully"}), 200
