@@ -30,6 +30,7 @@ def create_app(config_name='default'):
     from app.routes.announcement import announcement_bp
     from app.routes.upload import upload_bp
     from app.routes.oauth import oauth_bp
+    from app.routes.chat import chat_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
@@ -39,6 +40,7 @@ def create_app(config_name='default'):
     app.register_blueprint(announcement_bp, url_prefix='/api/announcements')
     app.register_blueprint(upload_bp, url_prefix='/api/upload')
     app.register_blueprint(oauth_bp, url_prefix='/api/oauth')
+    app.register_blueprint(chat_bp, url_prefix='/api/chat')
 
     # Create tables for development
     with app.app_context():

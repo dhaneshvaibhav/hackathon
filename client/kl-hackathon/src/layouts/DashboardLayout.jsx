@@ -4,19 +4,30 @@ import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { Menu, Search, Bell, X, Check, User, Shield, PlusCircle } from 'lucide-react';
 import { getManagedClubs, getClubRequests, handleClubRequest, getMyRequests } from '../functions/club';
 import { getUserProfile, becomeCreator } from '../functions/user';
+import ChatAssistant from '../components/ChatAssistant';
+import FullPageChat from '../components/FullPageChat';
+import { MessageSquare, Layout } from 'lucide-react';
 import './DashboardLayout.css';
 
 const DashboardLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    // Remove local isAIMode state, derive from location
     const [notifications, setNotifications] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    
+    // Lifted state for Chat persistence
+    const [chatMessages, setChatMessages] = useState([]);
+    const [chatInput, setChatInput] = useState('');
+
     const location = useLocation();
     const navigate = useNavigate();
     
-    // Pass searchQuery to children via Outlet context
+    const isAIMode = location.pathname === '/chat';
+    
+    // Pass searchQuery and chat state to children via Outlet context
     
     useEffect(() => {
         const fetchNotifications = async () => {
@@ -115,6 +126,13 @@ const DashboardLayout = () => {
         navigate('/clubs/create');
     };
 
+    const handleNewChat = () => {
+        setChatMessages([
+            { role: 'ai', content: 'Hi! I am your AI assistant. I can help you create clubs, schedule events, or answer questions about the platform. How can I help you today?' }
+        ]);
+        setChatInput('');
+    };
+
     return (
         <div className="dashboard-layout">
             <Sidebar 
@@ -122,31 +140,48 @@ const DashboardLayout = () => {
                 onClose={() => setIsSidebarOpen(false)} 
                 user={user}
                 onBecomeCreator={handleBecomeCreator}
+                mode={isAIMode ? 'ai' : 'standard'}
+                onToggleAI={() => isAIMode ? navigate('/dashboard') : navigate('/chat')}
+                onNewChat={handleNewChat}
             />
             <div className="main-wrapper">
-                <header className="dashboard-header">
+                <header 
+                    className="dashboard-header" 
+                    style={isAIMode ? { 
+                        backgroundColor: '#343541', 
+                        borderBottom: '1px solid rgba(255,255,255,0.1)',
+                        color: '#ECECEC'
+                    } : {}}
+                >
                     <div className="header-left">
-                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="menu-btn">
+                        <button 
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+                            className="menu-btn"
+                            style={isAIMode ? { color: '#ECECEC' } : {}}
+                        >
                             <Menu size={24} />
                         </button>
-                        <h2>Club Hub</h2>
+                        <h2 style={isAIMode ? { color: '#ECECEC' } : {}}>{isAIMode ? 'Club Hub AI' : 'Club Hub'}</h2>
                     </div>
                     
-                    <div className="header-center">
-                        <div className="search-bar">
-                            <Search size={18} className="search-icon" />
-                            <input 
-                                type="text" 
-                                placeholder="Search..." 
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
+                    {!isAIMode && (
+                        <div className="header-center">
+                            <div className="search-bar">
+                                <Search size={18} className="search-icon" />
+                                <input 
+                                    type="text" 
+                                    placeholder="Search..." 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <div className="header-right" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <button 
                             className="notification-btn" 
+                            style={isAIMode ? { color: '#ECECEC' } : {}}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setShowNotifications(!showNotifications);
@@ -251,9 +286,10 @@ const DashboardLayout = () => {
                         )}
                     </div>
                 </header>
-                <main className="dashboard-content">
-                    <Outlet context={{ searchQuery }} />
+                <main className="dashboard-content" style={isAIMode ? { padding: 0, height: 'calc(100vh - 64px)', overflow: 'hidden' } : {}}>
+                    <Outlet context={{ searchQuery, chatMessages, setChatMessages, chatInput, setChatInput }} />
                 </main>
+                {!isAIMode && <ChatAssistant />}
             </div>
         </div>
     );
