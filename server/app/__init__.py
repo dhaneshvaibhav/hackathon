@@ -16,6 +16,7 @@ def create_app(config_name='default'):
     # Import models to ensure they are registered with SQLAlchemy
     from app.models.user import User
     from app.models.club import Club
+    from app.models.event import Event
     
     # Register blueprints
     from app.routes.main import main_bp
