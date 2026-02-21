@@ -32,14 +32,13 @@ class OAuthService:
         if not client_id or not redirect_uri:
             return None, "LinkedIn credentials not configured"
         
-        # Scope: r_liteprofile, r_emailaddress are legacy scopes.
-        # If the user only has "Community Management API", they might not have profile scopes.
-        # We will try to request only the organization scopes to avoid authorization errors.
+        # Scope: r_liteprofile, r_emailaddress, openid are often not available with just Community Management.
+        # We will request ONLY the organization scopes.
+        # This means we cannot identify the user (get name/ID) or list organizations automatically (requires admin).
+        # We will rely on the user manually providing their Organization ID if listing fails.
         scopes = [
             "w_organization_social",
-            "r_organization_social",
-            "r_organization_admin",
-            "rw_organization_admin"
+            "r_organization_social"
         ]
         
         scope_string = " ".join(scopes)
@@ -182,81 +181,83 @@ class OAuthService:
         
         linkedin_user = {}
         
-        # Fetch organizations the user administers
+        # 1. Try to identify the user via /v2/me (requires r_liteprofile)
+        user_url = "https://api.linkedin.com/v2/me"
+        user_response = requests.get(user_url, headers=user_headers)
+        
+        provider_user_id = None
+        
+        if user_response.status_code == 200:
+             user_data = user_response.json()
+             provider_user_id = str(user_data.get('id'))
+             linkedin_user = user_data
+             linkedin_user['sub'] = provider_user_id
+             linkedin_user['name'] = f"{user_data.get('localizedFirstName', '')} {user_data.get('localizedLastName', '')}"
+        
+        # 2. Try to fetch organizations (might fail if r_organization_admin is missing)
         # The 'q=roleAssignee' parameter filters by the current user
-        org_url = "https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee&role=ADMINISTRATOR&state=APPROVED"
+        org_url = "https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee&state=APPROVED"
         org_response = requests.get(org_url, headers=user_headers)
         
-        if org_response.status_code != 200:
-             # Fallback: try fetching /v2/me just in case, or fail gracefully
-             user_url = "https://api.linkedin.com/v2/me"
-             user_response = requests.get(user_url, headers=user_headers)
-             if user_response.status_code == 200:
-                 user_data = user_response.json()
-                 provider_user_id = str(user_data.get('id'))
-                 linkedin_user = user_data
-                 linkedin_user['sub'] = provider_user_id
-                 linkedin_user['name'] = f"{user_data.get('localizedFirstName', '')} {user_data.get('localizedLastName', '')}"
-             else:
-                 return None, f"Failed to fetch LinkedIn data. Status: {org_response.status_code}. Response: {org_response.text}"
-        else:
+        linkedin_user['organizations'] = []
+        
+        if org_response.status_code == 200:
             org_data = org_response.json()
-            linkedin_user['organizations'] = []
             
-            # Extract user ID from the first element's roleAssignee if available
-            provider_user_id = None
-            if org_data.get('elements'):
-                # roleAssignee is like "urn:li:person:12345"
+            # If we still don't have provider_user_id, try to extract from roleAssignee
+            if not provider_user_id and org_data.get('elements'):
                 role_assignee_urn = org_data['elements'][0].get('roleAssignee', '')
                 if 'person' in role_assignee_urn:
                     provider_user_id = role_assignee_urn.split(':')[-1]
-            
-            if not provider_user_id:
-                # If no organizations found, we can't get the ID this way.
-                # Try /v2/me as a last resort (even if we didn't ask for scope, sometimes it works?)
-                # Actually, without scope it will fail.
-                # We need at least one organization to identify the user if we don't have profile scopes.
-                return None, "No managed organizations found to identify user. Please ensure you manage at least one LinkedIn page."
-
-            linkedin_user['sub'] = provider_user_id
-            linkedin_user['name'] = "LinkedIn User" # We don't have name access
+                    linkedin_user['sub'] = provider_user_id
+                    linkedin_user['name'] = "LinkedIn User" # Fallback name
             
             for element in org_data.get('elements', []):
                 org_urn = element.get('organizationalTarget', '')
-                # org_urn format: "urn:li:organization:123456"
-                
-                # Fetch basic organization details (name, logo)
-                # We need to extract the ID from the URN
                 if 'organization' in org_urn:
                     org_id = org_urn.split(':')[-1]
+                    
+                    # Fetch basic organization details
                     org_details_url = f"https://api.linkedin.com/v2/organizations/{org_id}"
                     org_details_resp = requests.get(org_details_url, headers=user_headers)
                     
+                    org_name = 'Unknown Organization'
+                    org_vanity = None
+                    org_logo = ''
+                    
                     if org_details_resp.status_code == 200:
                         org_info = org_details_resp.json()
-                        linkedin_user['organizations'].append({
-                            'id': org_id,
-                            'urn': org_urn,
-                            'name': org_info.get('localizedName', 'Unknown Organization'),
-                            'vanity_name': org_info.get('vanityName'),
-                            'logo': org_info.get('logoV2', {}).get('original', '') # Simplified, structure might vary
-                        })
-                        
-                        # Fetch follower statistics for this organization
-                        # Note: This requires 'r_organization_social' scope
-                        follower_stats_url = f"https://api.linkedin.com/v2/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity={org_urn}"
-                        follower_stats_resp = requests.get(follower_stats_url, headers=user_headers)
-                        
-                        if follower_stats_resp.status_code == 200:
-                            stats_data = follower_stats_resp.json()
-                            if stats_data.get('elements'):
-                                # Get the most recent stats
-                                latest_stat = stats_data['elements'][0]
-                                linkedin_user['organizations'][-1]['follower_stats'] = {
-                                    'follower_count': latest_stat.get('followerCountsByAssociationType', {}).get('followers', 0),
-                                    'organic_follower_count': latest_stat.get('followerCountsByAssociationType', {}).get('organicFollowers', 0),
-                                    'paid_follower_count': latest_stat.get('followerCountsByAssociationType', {}).get('paidFollowers', 0)
-                                }
+                        org_name = org_info.get('localizedName', 'Unknown Organization')
+                        org_vanity = org_info.get('vanityName')
+                        logo_data = org_info.get('logoV2', {})
+                        if 'original' in logo_data:
+                            org_logo = logo_data['original']
+                    
+                    org_entry = {
+                        'id': org_id,
+                        'urn': org_urn,
+                        'name': org_name,
+                        'vanity_name': org_vanity,
+                        'logo': org_logo,
+                        'follower_stats': {}
+                    }
+                    
+                    # Fetch follower statistics (requires r_organization_social)
+                    follower_stats_url = f"https://api.linkedin.com/v2/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity={org_urn}"
+                    follower_stats_resp = requests.get(follower_stats_url, headers=user_headers)
+                    
+                    if follower_stats_resp.status_code == 200:
+                        stats_data = follower_stats_resp.json()
+                        if stats_data.get('elements'):
+                            org_entry['follower_stats'] = stats_data['elements'][0]
+                            
+                    linkedin_user['organizations'].append(org_entry)
+        else:
+            # Log failure but do not crash if we have user ID
+            print(f"Warning: Failed to fetch organizations: {org_response.status_code} {org_response.text}")
+            
+        if not provider_user_id:
+            return None, f"Failed to identify LinkedIn user. /v2/me status: {user_response.status_code}. Please ensure 'r_liteprofile' is authorized."
 
         # Check existing connection
         existing_oauth = OAuth.query.filter_by(provider='linkedin', provider_user_id=provider_user_id).first()
