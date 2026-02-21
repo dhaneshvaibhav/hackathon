@@ -29,16 +29,15 @@ const Dashboard = () => {
             try {
                 const userData = await getUserProfile(token);
                 setUser(userData);           
-               const [clubsData, requestsData] = await Promise.all([
-                   getEvents(),
-                    getClubs(token),
-                    getMyRequests(token)
+               const [eventsData, clubsData, requestsData] = await Promise.all([
+                getEvents(),
+                getClubs(token),
+                getMyRequests(token)
+            ]);
 
-                ]);
-
-                setClubs(clubsData);
-                setMyRequests(requestsData);
-                setEvents(eventsData);
+            setEvents(eventsData);
+            setClubs(clubsData);
+            setMyRequests(requestsData);
 
             } catch (err) {
                 console.error('Failed to load dashboard data', err);
