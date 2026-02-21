@@ -1,5 +1,6 @@
 import requests
-from datetime import datetime
+from urllib.parse import quote
+from datetime import datetime, timedelta
 from flask import current_app, jsonify
 from app.extensions import db
 from app.models.oauth import OAuth
@@ -30,12 +31,30 @@ class OAuthService:
         if not client_id or not redirect_uri:
             return None, "LinkedIn credentials not configured"
         
-        # Scope: openid, profile, email are standard for Sign In with LinkedIn using OpenID Connect
-        # For older apps: r_liteprofile r_emailaddress
-        scope = "openid profile email"
+        # Scopes requested
+        scopes = [
+            "openid",
+            "profile",
+            "r_ads_reporting",
+            "r_organization_social",
+            "rw_organization_admin",
+            "w_member_social",
+            "rw_events",
+            "r_ads",
+            "w_organization_social",
+            "rw_ads",
+            "r_basicprofile",
+            "r_events",
+            "r_organization_admin",
+            "email",
+            "r_1st_connections_size"
+        ]
+        
+        scope_str = " ".join(scopes)
+        encoded_scope = quote(scope_str)
         state = "linkedin"
         
-        url = f"https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope={scope}&state={state}"
+        url = f"https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope={encoded_scope}&state={state}"
         return url, None
 
     @staticmethod
@@ -113,6 +132,151 @@ class OAuthService:
             return None, str(e)
 
     @staticmethod
+    def fetch_linkedin_additional_data(access_token, linkedin_user):
+        """
+        Fetch additional data from LinkedIn:
+        - Network size
+        - Organization list
+        - Events hosted
+        """
+        headers = {'Authorization': f'Bearer {access_token}', 'X-Restli-Protocol-Version': '2.0.0'}
+        data = {}
+
+        # 1. Network Size
+        print("Fetching LinkedIn Network Size...")
+        try:
+            # Extract Person ID from 'sub' (OIDC ID)
+            person_id = linkedin_user.get('sub')
+            if person_id.startswith('urn:li:person:'):
+                person_id = person_id.split(':')[-1]
+            
+            # Construct the URN and URL encode it for the path
+            person_urn = f"urn:li:person:{person_id}"
+            encoded_person_urn = quote(person_urn)
+            network_url = f"https://api.linkedin.com/v2/connections/{encoded_person_urn}"
+            
+            conn_resp = requests.get(network_url, headers=headers)
+            print(f"Network Size Response: {conn_resp.status_code} - {conn_resp.text}")
+            
+            if conn_resp.status_code == 200:
+                conn_data = conn_resp.json()
+                data['network_size'] = conn_data.get('firstDegreeSize', 0)
+            else:
+                # Fallback to /v2/me if connections endpoint fails
+                print("Fallback: Fetching Network Size from /v2/me")
+                me_url = "https://api.linkedin.com/v2/me?projection=(id,numConnections)"
+                me_resp = requests.get(me_url, headers=headers)
+                print(f"Me Response: {me_resp.status_code} - {me_resp.text}")
+                if me_resp.status_code == 200:
+                    data['network_size'] = me_resp.json().get('numConnections', 0)
+                else:
+                    data['network_size'] = 0
+        except Exception as e:
+            print(f"Error fetching network size: {e}")
+            data['network_size'] = 0
+
+        # 2. Organization List
+        print("Fetching LinkedIn Organizations...")
+        try:
+            orgs_url = "https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee&state=APPROVED"
+            orgs_resp = requests.get(orgs_url, headers=headers)
+            print(f"Orgs Response: {orgs_resp.status_code} - {orgs_resp.text}")
+            
+            if orgs_resp.status_code == 200:
+                orgs_data = orgs_resp.json()
+                elements = orgs_data.get('elements', [])
+                
+                organizations = []
+                for el in elements:
+                    org_urn = el.get('organizationalTarget')
+                    role = el.get('role')
+                    state = el.get('state')
+                    
+                    org_details = {
+                        'urn': org_urn,
+                        'role': role,
+                        'state': state
+                    }
+                    
+                    try:
+                        # Extract Organization ID
+                        org_id = org_urn.split(':')[-1]
+                        
+                        # Fetch Organization Details (Name)
+                        if 'organization' in org_urn:
+                            details_url = f"https://api.linkedin.com/v2/organizations/{org_id}?projection=(localizedName)"
+                            details_resp = requests.get(details_url, headers=headers)
+                            if details_resp.status_code == 200:
+                                org_details['organizationName'] = details_resp.json().get('localizedName', 'Unknown Organization')
+                            else:
+                                print(f"Failed to fetch details for {org_urn}: {details_resp.text}")
+                                org_details['organizationName'] = 'Unknown Organization'
+
+                        # Fetch Organization Follower Statistics
+                        if 'organization' in org_urn:
+                            stats_url = "https://api.linkedin.com/v2/organizationalEntityFollowerStatistics"
+                            params = {
+                                'q': 'organizationalEntity',
+                                'organizationalEntity': org_urn
+                            }
+                            stats_resp = requests.get(stats_url, headers=headers, params=params)
+                            print(f"Org Stats Response for {org_urn}: {stats_resp.status_code}")
+                            
+                            if stats_resp.status_code == 200:
+                                stats_data = stats_resp.json()
+                                total_followers = 0
+                                if 'elements' in stats_data:
+                                    for stat_el in stats_data['elements']:
+                                        follower_counts = stat_el.get('followerCountsByAssociationType', [])
+                                        for fc in follower_counts:
+                                            counts = fc.get('followerCounts', {})
+                                            total_followers += counts.get('organicFollowerCount', 0)
+                                            total_followers += counts.get('paidFollowerCount', 0)
+                                
+                                org_details['followers'] = total_followers
+                                print(f"Followers for {org_urn}: {total_followers}")
+                            else:
+                                print(f"Failed to fetch stats: {stats_resp.text}")
+                    except Exception as e:
+                        print(f"Error fetching details/followers for {org_urn}: {e}")
+                        pass
+                        
+                    organizations.append(org_details)
+                
+                data['orgs'] = organizations
+        except Exception as e:
+            print(f"Error fetching organizations: {e}")
+
+        # 3. Events Hosted
+        print("Fetching LinkedIn Events...")
+        try:
+            # Try to fetch events using eventAcls
+            events_url = "https://api.linkedin.com/v2/eventAcls?q=roleAssignee&state=APPROVED"
+            events_resp = requests.get(events_url, headers=headers)
+            print(f"Events Response: {events_resp.status_code} - {events_resp.text}")
+            
+            if events_resp.status_code == 200:
+                events_data = events_resp.json()
+                elements = events_data.get('elements', [])
+                
+                events = []
+                for el in elements:
+                    event_urn = el.get('event')
+                    role = el.get('role')
+                    events.append({
+                        'urn': event_urn,
+                        'role': role
+                    })
+                data['events'] = events
+            else:
+                data['events'] = []
+        except Exception as e:
+            print(f"Error fetching events: {e}")
+            data['events'] = []
+
+        return data
+
+    @staticmethod
     def handle_linkedin_callback(code, user_id):
         """
         Exchange code for token and save LinkedIn OAuth data.
@@ -143,6 +307,13 @@ class OAuthService:
         
         token_data = response.json()
         access_token = token_data.get('access_token')
+        refresh_token = token_data.get('refresh_token')
+        expires_in = token_data.get('expires_in')
+        
+        token_expiry = None
+        if expires_in:
+            token_expiry = datetime.utcnow() + timedelta(seconds=expires_in)
+
         if not access_token:
             return None, "No access token in response"
 
@@ -160,6 +331,10 @@ class OAuthService:
         # Try to fetch additional info if possible, but basic profile is in linkedin_user
         # linkedin_user keys: sub, name, given_name, family_name, picture, email, email_verified
         
+        # Fetch additional data (network size, orgs, events)
+        additional_data = OAuthService.fetch_linkedin_additional_data(access_token, linkedin_user)
+        linkedin_user.update(additional_data)
+
         # Check existing connection
         existing_oauth = OAuth.query.filter_by(provider='linkedin', provider_user_id=provider_user_id).first()
         if existing_oauth and existing_oauth.user_id != user_id:
@@ -170,6 +345,10 @@ class OAuthService:
         if user_oauth:
             user_oauth.provider_user_id = provider_user_id
             user_oauth.access_token = access_token
+            if refresh_token:
+                user_oauth.refresh_token = refresh_token
+            if token_expiry:
+                user_oauth.token_expiry = token_expiry
             user_oauth.meta_data = linkedin_user
             user_oauth.updated_at = datetime.utcnow()
         else:
@@ -178,6 +357,8 @@ class OAuthService:
                 provider='linkedin',
                 provider_user_id=provider_user_id,
                 access_token=access_token,
+                refresh_token=refresh_token,
+                token_expiry=token_expiry,
                 meta_data=linkedin_user
             )
             db.session.add(user_oauth)

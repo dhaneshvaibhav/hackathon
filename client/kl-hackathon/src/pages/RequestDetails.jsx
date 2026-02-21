@@ -1,8 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRequestDetails, handleClubRequest, getClubRequestRepos } from '../functions/club';
-import { ArrowLeft, User, Github, Check, X, Star, GitBranch, Code } from 'lucide-react';
+import { ArrowLeft, User, Github, Check, X, Star, GitBranch, Code, Linkedin, ChevronDown, ChevronUp, Users, Building, Calendar } from 'lucide-react';
 import './Dashboard.css';
+
+const AccordionItem = ({ title, icon: Icon, children, isOpen, onToggle, color = 'var(--text-main)' }) => {
+    return (
+        <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '1rem', overflow: 'hidden' }}>
+            <button 
+                onClick={onToggle}
+                style={{ 
+                    width: '100%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    padding: '1rem 1.5rem',
+                    background: isOpen ? '#f8fafc' : 'white',
+                    border: 'none',
+                    borderBottom: isOpen ? '1px solid #e2e8f0' : 'none',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'background 0.2s'
+                }}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.1rem', fontWeight: '600', color: color }}>
+                    {Icon && <Icon size={24} />}
+                    {title}
+                </div>
+                {isOpen ? <ChevronUp size={20} color="#64748b" /> : <ChevronDown size={20} color="#64748b" />}
+            </button>
+            
+            {isOpen && (
+                <div style={{ padding: '1.5rem', background: 'white' }}>
+                    {children}
+                </div>
+            )}
+        </div>
+    );
+};
 
 const RequestDetails = () => {
     const { id } = useParams();
@@ -13,6 +48,7 @@ const RequestDetails = () => {
     const [loadingRepos, setLoadingRepos] = useState(false);
     const [error, setError] = useState('');
     const [processing, setProcessing] = useState(false);
+    const [openSection, setOpenSection] = useState(null); // 'github' or 'linkedin'
 
     useEffect(() => {
         const fetchRepos = async (token) => {
@@ -108,6 +144,7 @@ const RequestDetails = () => {
 
     const { user_details, club_name, role, message, status } = request;
     const githubAccount = user_details.oauth_accounts.find(acc => acc.provider === 'github');
+    const linkedinAccount = user_details.oauth_accounts.find(acc => acc.provider === 'linkedin');
 
     return (
         <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh' }}>
@@ -173,11 +210,18 @@ const RequestDetails = () => {
 
                     <div style={{ marginTop: '2rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
                         <h2 style={{ fontSize: '1.4rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Github size={24} /> GitHub Activity
+                            <Users size={24} /> Social Profiles
                         </h2>
                         
+                        {/* GitHub Section */}
                         {githubAccount ? (
-                            <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                            <AccordionItem 
+                                title="GitHub Profile" 
+                                icon={Github} 
+                                color="#333"
+                                isOpen={openSection === 'github'}
+                                onToggle={() => setOpenSection(openSection === 'github' ? null : 'github')}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                                     {githubAccount.meta_data?.avatar_url && (
                                         <img 
@@ -246,11 +290,88 @@ const RequestDetails = () => {
                                         <p style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>No public repositories found.</p>
                                     )}
                                 </div>
-                            </div>
+                            </AccordionItem>
                         ) : (
-                            <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                                User has not connected their GitHub account.
-                            </p>
+                            <div style={{ marginBottom: '1rem', padding: '1rem', border: '1px dashed #cbd5e1', borderRadius: '8px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Github size={20} /> User has not connected their GitHub account.
+                            </div>
+                        )}
+
+                        {/* LinkedIn Section */}
+                        {linkedinAccount ? (
+                            <AccordionItem 
+                                title="LinkedIn Profile" 
+                                icon={Linkedin} 
+                                color="#0077b5"
+                                isOpen={openSection === 'linkedin'}
+                                onToggle={() => setOpenSection(openSection === 'linkedin' ? null : 'linkedin')}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                                    {linkedinAccount.meta_data?.picture && (
+                                        <img 
+                                            src={linkedinAccount.meta_data.picture} 
+                                            alt="LinkedIn Avatar" 
+                                            style={{ width: '64px', height: '64px', borderRadius: '50%' }}
+                                        />
+                                    )}
+                                    <div>
+                                        <h3 style={{ margin: 0, color: 'var(--text-main)' }}>
+                                            {linkedinAccount.meta_data?.name || 'LinkedIn User'}
+                                        </h3>
+                                        <p style={{ margin: 0, color: 'var(--text-muted)' }}>ID: {linkedinAccount.provider_user_id}</p>
+                                        {linkedinAccount.meta_data?.email && (
+                                            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>{linkedinAccount.meta_data.email}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                                    <StatCard label="Network Size" value={linkedinAccount.meta_data?.network_size || 0} />
+                                    {/* Add more stats if available */}
+                                </div>
+
+                                {/* Organizations */}
+                                {linkedinAccount.meta_data?.orgs && linkedinAccount.meta_data.orgs.length > 0 && (
+                                    <div style={{ marginBottom: '1.5rem' }}>
+                                        <h4 style={{ fontSize: '1rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-main)' }}>
+                                            <Building size={18} /> Organizations
+                                        </h4>
+                                        <div style={{ display: 'grid', gap: '0.75rem' }}>
+                                            {linkedinAccount.meta_data.orgs.map((org, index) => (
+                                                <div key={index} style={{ padding: '0.75rem', background: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                                    <div style={{ fontWeight: '600' }}>{org.role || 'Member'}</div>
+                                                    <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{org.organizationName || 'Unknown Organization'}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Events */}
+                                {linkedinAccount.meta_data?.events && linkedinAccount.meta_data.events.length > 0 ? (
+                                    <div>
+                                        <h4 style={{ fontSize: '1rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-main)' }}>
+                                            <Calendar size={18} /> Events Hosted
+                                        </h4>
+                                        <div style={{ display: 'grid', gap: '0.75rem' }}>
+                                            {linkedinAccount.meta_data.events.map((event, index) => (
+                                                <div key={index} style={{ padding: '0.75rem', background: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                                    <div style={{ fontWeight: '600' }}>{event.role || 'Organizer'}</div>
+                                                    <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>URN: {event.urn}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9rem' }}>
+                                        No events hosted found.
+                                    </div>
+                                )}
+                            </AccordionItem>
+                        ) : (
+                            <div style={{ marginBottom: '1rem', padding: '1rem', border: '1px dashed #cbd5e1', borderRadius: '8px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Linkedin size={20} /> User has not connected their LinkedIn account.
+                            </div>
                         )}
                     </div>
 

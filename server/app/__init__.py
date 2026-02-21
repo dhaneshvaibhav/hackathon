@@ -12,7 +12,7 @@ def create_app(config_name='default'):
     db.init_app(app)
     cors.init_app(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}}, supports_credentials=True)
     jwt.init_app(app)
-    migrate.init_app(app, db)
+    migrate.init_app(app, db, compare_type=True)
    
     # Import models to ensure they are registered with SQLAlchemy
     from app.models.user import User
