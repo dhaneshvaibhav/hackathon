@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getClub, requestJoinClub, getMyRequests } from '../functions/club';
 import { getUserProfile } from '../functions/user';
-import { Users, CheckCircle, Clock, PlusCircle, ArrowLeft, Edit } from 'lucide-react';
+import { Users, CheckCircle, Clock, PlusCircle, ArrowLeft, Edit, Calendar, MapPin, ExternalLink } from 'lucide-react';
 import './Dashboard.css';
 
 const ClubDetails = () => {
@@ -292,15 +292,157 @@ const ClubDetails = () => {
                             </p>
                         </div>
 
+                        {/* Events Section */}
+                        {club.events && club.events.length > 0 && (
+                            <div style={{ marginTop: '3rem', borderTop: '1px solid #e2e8f0', paddingTop: '2rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                    <h2 style={{ fontSize: '1.5rem', margin: 0, color: 'var(--primary)' }}>Upcoming Events</h2>
+                                    <button 
+                                        onClick={() => navigate('/events')}
+                                        style={{ 
+                                            background: 'none', 
+                                            border: 'none', 
+                                            color: 'var(--primary)', 
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.5rem',
+                                            fontSize: '0.9rem',
+                                            fontWeight: '500'
+                                        }}
+                                    >
+                                        View All <ArrowLeft size={14} style={{ transform: 'rotate(180deg)' }} />
+                                    </button>
+                                </div>
+                                
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                                    {club.events.map(event => (
+                                        <div key={event.id} style={{ 
+                                            border: '1px solid #e2e8f0', 
+                                            borderRadius: '12px', 
+                                            overflow: 'hidden',
+                                            backgroundColor: 'white',
+                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                            display: 'flex',
+                                            flexDirection: 'column'
+                                        }}>
+                                            <div style={{ height: '160px', width: '100%', position: 'relative', overflow: 'hidden' }}>
+                                                {event.poster_url ? (
+                                                    <img 
+                                                        src={event.poster_url} 
+                                                        alt={event.title} 
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                                    />
+                                                ) : (
+                                                    <div style={{ width: '100%', height: '100%', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Calendar size={48} color="#cbd5e1" />
+                                                    </div>
+                                                )}
+                                                <div style={{ 
+                                                    position: 'absolute', 
+                                                    top: '1rem', 
+                                                    right: '1rem', 
+                                                    backgroundColor: 'white', 
+                                                    padding: '0.25rem 0.75rem', 
+                                                    borderRadius: '20px', 
+                                                    fontSize: '0.75rem', 
+                                                    fontWeight: '600',
+                                                    color: 'var(--primary)',
+                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                                }}>
+                                                    {event.status === 'upcoming' ? 'Upcoming' : event.status}
+                                                </div>
+                                            </div>
+                                            
+                                            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: '600' }}>{event.title}</h3>
+                                                
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        <Clock size={16} className="text-gray-400" />
+                                                        <span>{new Date(event.start_date).toLocaleDateString()} • {new Date(event.start_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                    </div>
+                                                    {event.location && (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                            <MapPin size={16} className="text-gray-400" />
+                                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.location}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                
+                                                <div style={{ marginTop: 'auto' }}>
+                                                    <button 
+                                                        onClick={() => navigate(`/events/${event.id}`)}
+                                                        className="btn-primary"
+                                                        style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
+                                                    >
+                                                        Event Details <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Members Section */}
-                        {club.members && club.members.length > 0 && (
-                            <div style={{ marginTop: '2rem', borderTop: '1px solid #e2e8f0', paddingTop: '2rem' }}>
-                                <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Members ({club.members.length})</h3>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                                    {/* Ideally fetch member names, but for now showing count or IDs if needed */}
-                                    <p style={{ color: 'var(--text-muted)' }}>
-                                        This club has {club.members.length} active member{club.members.length !== 1 ? 's' : ''}.
-                                    </p>
+                        {club.members_details && club.members_details.length > 0 && (
+                            <div style={{ marginTop: '3rem', borderTop: '1px solid #e2e8f0', paddingTop: '2rem' }}>
+                                <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: 'var(--primary)' }}>
+                                    Club Members <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>({club.members_details.length})</span>
+                                </h2>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+                                    {club.members_details.map((member, index) => (
+                                        <div key={index} style={{ 
+                                            padding: '1rem', 
+                                            border: '1px solid #e2e8f0', 
+                                            borderRadius: '12px', 
+                                            backgroundColor: 'white',
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            gap: '1rem',
+                                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                        }}>
+                                            <div style={{ 
+                                                width: '48px', 
+                                                height: '48px', 
+                                                borderRadius: '50%', 
+                                                backgroundColor: '#f1f5f9', 
+                                                display: 'flex', 
+                                                alignItems: 'center', 
+                                                justifyContent: 'center',
+                                                overflow: 'hidden',
+                                                flexShrink: 0,
+                                                border: '2px solid white',
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                            }}>
+                                                {member.profile_picture ? (
+                                                    <img src={member.profile_picture} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    <span style={{ fontWeight: '600', color: '#64748b', fontSize: '1.1rem' }}>{member.name.charAt(0).toUpperCase()}</span>
+                                                )}
+                                            </div>
+                                            <div style={{ flex: 1, overflow: 'hidden' }}>
+                                                <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem', fontWeight: '600', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{member.name}</h4>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <span style={{ 
+                                                        fontSize: '0.75rem', 
+                                                        padding: '0.15rem 0.5rem', 
+                                                        borderRadius: '12px', 
+                                                        backgroundColor: member.role === 'owner' || member.role === 'admin' ? '#dbeafe' : '#f1f5f9', 
+                                                        color: member.role === 'owner' || member.role === 'admin' ? '#1e40af' : '#475569',
+                                                        fontWeight: '500',
+                                                        textTransform: 'capitalize'
+                                                    }}>
+                                                        {member.role}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         )}

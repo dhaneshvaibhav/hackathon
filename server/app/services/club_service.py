@@ -51,6 +51,48 @@ class ClubService:
         return Club.query.get(club_id)
 
     @staticmethod
+    def get_club_with_details(club_id):
+        club = Club.query.get(club_id)
+        if not club:
+            return None
+        
+        # Enrich members
+        members_details = []
+        if club.members:
+            # club.members is a list of dicts: [{'user_id': 1, 'role': 'owner'}, ...]
+            user_ids = [int(m['user_id']) for m in club.members]
+            users = User.query.filter(User.id.in_(user_ids)).all()
+            user_map = {u.id: u for u in users}
+            
+            for m in club.members:
+                user = user_map.get(int(m['user_id']))
+                if user:
+                    profile_picture = None
+                    # Try to find avatar from oauth accounts
+                    if user.oauth_accounts:
+                        for acc in user.oauth_accounts:
+                            if acc.meta_data and 'avatar_url' in acc.meta_data:
+                                profile_picture = acc.meta_data['avatar_url']
+                                break
+                                
+                    members_details.append({
+                        'user_id': user.id,
+                        'name': user.name,
+                        'email': user.email,
+                        'role': m['role'],
+                        'profile_picture': profile_picture
+                    })
+        
+        # Events (using relationship)
+        events = [e.to_dict() for e in club.events]
+        
+        result = club.to_dict()
+        result['members_details'] = members_details
+        result['events'] = events
+        
+        return result
+
+    @staticmethod
     def search_clubs(query):
         """
         Search clubs by name, description, or category.
