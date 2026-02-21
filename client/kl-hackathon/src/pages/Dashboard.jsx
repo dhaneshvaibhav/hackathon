@@ -207,8 +207,8 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh' }}>
-            <main className="container" style={{ padding: '3rem 2rem' }}>
-                <div style={{ marginBottom: '3rem', maxWidth: '800px', margin: '0 auto' }}>
+            <main className="container" style={{ padding: '3rem 2rem', maxWidth: '100%' }}>
+                <div style={{ marginBottom: '3rem', width: '100%' }}>
                     {/* Events Carousel */}
                     <div style={{ marginBottom: '2.5rem' }}>
                         <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-main)', fontWeight: '600' }}>Discover Events</h2>
