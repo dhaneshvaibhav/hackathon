@@ -70,21 +70,6 @@
     text-align: center;
 }
 
-.mobile-toggle {
-    display: none;
-    position: fixed;
-    top: 1rem;
-    left: 1rem;
-    z-index: 1001;
-    background-color: var(--primary);
-    color: var(--accent);
-    border: none;
-    border-radius: 8px;
-    padding: 0.5rem;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
 .sidebar-overlay {
     display: none;
     position: fixed;
@@ -103,10 +88,6 @@
 
     .sidebar.open {
         transform: translateX(0);
-    }
-
-    .mobile-toggle {
-        display: block;
     }
 
     .sidebar-overlay {
