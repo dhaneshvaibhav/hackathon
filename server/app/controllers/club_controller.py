@@ -12,10 +12,10 @@ def get_managed_clubs():
     return jsonify([c.to_dict() for c in clubs]), 200
 
 def get_club(club_id):
-    club = ClubService.get_club_by_id(club_id)
-    if not club:
+    club_details = ClubService.get_club_with_details(club_id)
+    if not club_details:
         return jsonify({'error': 'Club not found'}), 404
-    return jsonify(club.to_dict()), 200
+    return jsonify(club_details), 200
 
 def create_club():
     current_user_id = get_jwt_identity()
