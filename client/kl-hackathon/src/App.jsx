@@ -19,6 +19,7 @@ import OAuthCallback from './pages/OAuthCallback';
 
 import EditClub from './pages/EditClub';
 import RequestDetails from './pages/RequestDetails';
+import FullPageChat from './components/FullPageChat';
 
 
 import './App.css';
@@ -53,6 +54,7 @@ function App() {
                     <Route path="/admin" element={<AdminDashboard />} />
                     <Route path="/requests/:id" element={<RequestDetails />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/chat" element={<FullPageChat />} />
                     <Route path="/oauth/callback" element={<OAuthCallback />} />
                 </Route>
         </Route>
