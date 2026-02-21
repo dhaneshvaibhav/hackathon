@@ -36,8 +36,7 @@ export const loginUser = async (email, password) => {
 export const signupUser = async (userData) => {
     // Map frontend camelCase to backend snake_case
     const payload = {
-        first_name: userData.firstName,
-        last_name: userData.lastName,
+        name: `${userData.firstName} ${userData.lastName}`,
         email: userData.email,
         role: userData.role,
         password: userData.password

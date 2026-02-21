@@ -1,7 +1,6 @@
 from app.models.user import User
 from app.extensions import db
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token
+from app.utils.auth_utils import hash_password, verify_password, create_token
 
 class AuthService:
     @staticmethod
@@ -10,18 +9,25 @@ class AuthService:
         password = data.get('password')
         first_name = data.get('first_name')
         last_name = data.get('last_name')
+        # Combine first and last name if name is not provided
+        name = data.get('name')
+        if not name and first_name and last_name:
+            name = f"{first_name} {last_name}"
+        elif not name:
+            name = first_name or last_name or "Unknown"
+            
         role = data.get('role', 'student')
+        is_admin = (role == 'club_leader')
 
         if User.query.filter_by(email=email).first():
             return None, "User already exists"
 
-        hashed_password = generate_password_hash(password)
+        hashed_password = hash_password(password)
         new_user = User(
             email=email,
             password_hash=hashed_password,
-            first_name=first_name,
-            last_name=last_name,
-            role=role
+            name=name,
+            is_admin=is_admin
         )
         
         db.session.add(new_user)
@@ -36,10 +42,10 @@ class AuthService:
 
         user = User.query.filter_by(email=email).first()
         
-        if not user or not check_password_hash(user.password_hash, password):
+        if not user or not verify_password(user.password_hash, password):
             return None, "Invalid email or password"
             
-        access_token = create_access_token(identity=user.id)
+        access_token = create_token(identity=user.id)
         
         return {
             'token': access_token,

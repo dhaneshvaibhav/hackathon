@@ -17,9 +17,11 @@ def create_app(config_name='default'):
     # Register blueprints
     from app.routes.main import main_bp
     from app.routes.auth import auth_bp
+    from app.routes.user import user_bp
     
     app.register_blueprint(main_bp)
-    app.register_blueprint(auth_bp)
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(user_bp, url_prefix='/api/users')
 
     # Create tables for development
     with app.app_context():
