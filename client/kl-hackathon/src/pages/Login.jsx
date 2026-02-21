@@ -2,27 +2,53 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import { validateInstitutionalEmail } from '../functions/authValidation';
+import { loginUser } from '../functions/auth';
 import './Auth.css';
 
 const Login = () => {
-    const [email, setEmail] = useState('');
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.id]: e.target.value
+        });
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setLoading(true);
 
-        if (!validateInstitutionalEmail(email)) {
+        if (!validateInstitutionalEmail(formData.email)) {
             setError('Please use your institutional or college email address (e.g., student@college.edu). Personal emails are not accepted.');
+            setLoading(false);
             return;
         }
 
-        // Just mock routing for now based on email prefix, actual auth needed later
-        if (email.startsWith('admin')) {
-            navigate('/admin');
-        } else {
-            navigate('/dashboard');
+        try {
+            const data = await loginUser(formData.email, formData.password);
+
+            // Store token and user data
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+
+            // Redirect based on role
+            if (data.user.role === 'admin') {
+                navigate('/admin');
+            } else {
+                navigate('/dashboard');
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -44,15 +70,15 @@ const Login = () => {
                             type="email"
                             id="email"
                             placeholder="student@college.edu"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={formData.email}
+                            onChange={handleChange}
                             required
                         />
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
-                        <input type="password" id="password" placeholder="••••••••" required />
+                        <input type="password" id="password" placeholder="••••••••" value={formData.password} onChange={handleChange} required />
                     </div>
 
                     <div className="form-options">
@@ -64,7 +90,9 @@ const Login = () => {
                         <a href="#" className="forgot-password">Forgot Password?</a>
                     </div>
 
-                    <button type="submit" className="btn btn-primary auth-btn">Sign In</button>
+                    <button type="submit" className="btn btn-primary auth-btn" disabled={loading}>
+                        {loading ? 'Signing in...' : 'Sign In'}
+                    </button>
                 </form>
 
                 <div className="auth-footer">
