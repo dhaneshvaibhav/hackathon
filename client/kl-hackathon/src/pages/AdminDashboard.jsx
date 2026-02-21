@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { CalendarDays, Users, ArrowRight } from 'lucide-react';
 import { getUserProfile } from '../functions/user';
 import { getManagedClubs } from '../functions/club';
+import { uploadMedia } from '../functions/upload';
 import { createEvent, getEvents, createAnnouncement } from '../functions/event';
 import './Dashboard.css';
 
@@ -12,6 +13,8 @@ const AdminDashboard = () => {
     const [clubs, setClubs] = useState([]);
     const [events, setEvents] = useState([]);
     const [showEventModal, setShowEventModal] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
     const [newEvent, setNewEvent] = useState({
         title: '',
         description: '',
@@ -100,8 +103,17 @@ const AdminDashboard = () => {
         }
 
         try {
+            setUploading(true);
+            let posterUrl = newEvent.poster_url;
+
+            if (selectedFile) {
+                const uploadResult = await uploadMedia(token, selectedFile);
+                posterUrl = uploadResult.url;
+            }
+
             const eventData = {
                 ...newEvent,
+                poster_url: posterUrl,
                 fee: parseFloat(newEvent.fee) || 0,
                 start_date: new Date(newEvent.start_date).toISOString(),
                 end_date: new Date(newEvent.end_date).toISOString()
@@ -120,10 +132,13 @@ const AdminDashboard = () => {
                 fee: 0,
                 status: 'upcoming'
             });
+            setSelectedFile(null);
             setSuccessMessage('Event created successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             setEventError(err.message);
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -156,18 +171,6 @@ const AdminDashboard = () => {
                             <h3 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>{clubs.length}</h3>
                             <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Managed Clubs</p>
                         </div>
-                    </div>
-
-
-
-                    <div style={{ backgroundColor: 'var(--accent)', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'white', textDecoration: 'none' }}>
-                        <Link to="/profile" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', color: 'white', textDecoration: 'none' }}>
-                            <div>
-                                <h3 style={{ margin: 0, fontSize: '1.25rem', marginBottom: '0.25rem' }}>Your Profile</h3>
-                                <p style={{ margin: 0, opacity: 0.9, fontSize: '0.9rem' }}>View or edit your details</p>
-                            </div>
-                            <ArrowRight size={24} color="white" />
-                        </Link>
                     </div>
                 </div>
 
@@ -372,12 +375,12 @@ const AdminDashboard = () => {
                                 </div>
 
                                 <div style={{ marginBottom: '1rem' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Poster URL</label>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Poster Image</label>
                                     <input 
-                                        type="text" 
-                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                        value={newEvent.poster_url}
-                                        onChange={(e) => setNewEvent({...newEvent, poster_url: e.target.value})}
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={(e) => setSelectedFile(e.target.files[0])}
+                                        style={{ width: '100%', padding: '0.5rem' }}
                                     />
                                 </div>
 
@@ -390,8 +393,8 @@ const AdminDashboard = () => {
                                     >
                                         Cancel
                                     </button>
-                                    <button type="submit" className="btn btn-primary">
-                                        Create Event
+                                    <button type="submit" className="btn btn-primary" disabled={uploading}>
+                                        {uploading ? 'Creating...' : 'Create Event'}
                                     </button>
                                 </div>
                             </form>
