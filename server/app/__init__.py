@@ -13,8 +13,13 @@ def create_app(config_name='default'):
     cors.init_app(app)
     jwt.init_app(app)
     migrate.init_app(app, db)
+   
+    # Import models to ensure they are registered with SQLAlchemy
+    from app.models.user import User
+    from app.models.club import Club
+    from app.models.event import Event
     
-    # Register blueprints
+    # Created Routes
     from app.routes.main import main_bp
     from app.routes.auth import auth_bp
     from app.routes.user import user_bp
