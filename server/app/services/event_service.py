@@ -1,13 +1,16 @@
 from app.models.event import Event
+from app.models.club import Club
+from app.models.user import User
 from app.extensions import db
 from datetime import datetime, timezone
 
 class EventService:
     @staticmethod
-    def create_event(data):
+    def create_event(data, user_id):
         """
         Create a new event.
         :param data: Dictionary containing event data
+        :param user_id: ID of the user creating the event
         :return: Created Event object or None, Error message
         """
         try:
@@ -16,6 +19,17 @@ class EventService:
             for field in required_fields:
                 if field not in data:
                     return None, f"Missing required field: {field}"
+
+            # Validate Club Ownership
+            club_id = data.get('club_id')
+            club = Club.query.get(club_id)
+            if not club:
+                return None, "Club not found"
+
+            if club.owner_id != user_id:
+                user = User.query.get(user_id)
+                if not user or not user.is_admin:
+                    return None, "Unauthorized: Only club owner or admin can create events"
 
             # Parse start_date and end_date
             try:
@@ -83,16 +97,24 @@ class EventService:
         return Event.query.get(event_id)
 
     @staticmethod
-    def update_event(event_id, data):
+    def update_event(event_id, data, user_id):
         """
         Update an existing event.
         :param event_id: ID of the event to update
         :param data: Dictionary containing updated data
+        :param user_id: ID of the user requesting update
         :return: Updated Event object or None, Error message
         """
         event = Event.query.get(event_id)
         if not event:
             return None, "Event not found"
+
+        # Check authorization
+        club = Club.query.get(event.club_id)
+        if club.owner_id != user_id:
+            user = User.query.get(user_id)
+            if not user or not user.is_admin:
+                return None, "Unauthorized: Only club owner or admin can update events"
 
         try:
             if 'title' in data:
@@ -101,38 +123,6 @@ class EventService:
                 event.description = data['description']
             if 'poster_url' in data:
                 event.poster_url = data['poster_url']
-            
-            # Handle dates
-            start_date = event.start_date
-            end_date = event.end_date
-            
-            if 'start_date' in data:
-                try:
-                    start_date = data['start_date']
-                    if isinstance(start_date, str):
-                        start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
-                    event.start_date = start_date
-                except ValueError:
-                    return None, "Invalid date format for start_date. Use ISO 8601 format."
-            
-            if 'end_date' in data:
-                try:
-                    end_date = data['end_date']
-                    if isinstance(end_date, str):
-                        end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
-                    event.end_date = end_date
-                except ValueError:
-                    return None, "Invalid date format for end_date. Use ISO 8601 format."
-
-            # Update status based on new/existing dates
-            now = datetime.utcnow()
-            if now < start_date:
-                event.status = 'upcoming'
-            elif start_date <= now <= end_date:
-                event.status = 'ongoing'
-            else:
-                event.status = 'completed'
-
             if 'location' in data:
                 event.location = data['location']
             if 'fee' in data:
@@ -140,6 +130,30 @@ class EventService:
             if 'meta_data' in data:
                 event.meta_data = data['meta_data']
             
+            # Handle date updates if provided
+            if 'start_date' in data or 'end_date' in data:
+                def parse_to_naive_utc(date_str):
+                    if not isinstance(date_str, str):
+                        return date_str
+                    dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                    if dt.tzinfo is not None:
+                        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+                    return dt
+
+                if 'start_date' in data:
+                    event.start_date = parse_to_naive_utc(data['start_date'])
+                if 'end_date' in data:
+                    event.end_date = parse_to_naive_utc(data['end_date'])
+                
+                # Update status
+                now = datetime.utcnow()
+                if now < event.start_date:
+                    event.status = 'upcoming'
+                elif event.start_date <= now <= event.end_date:
+                    event.status = 'ongoing'
+                else:
+                    event.status = 'completed'
+
             db.session.commit()
             return event, None
         except Exception as e:
@@ -147,15 +161,25 @@ class EventService:
             return None, str(e)
 
     @staticmethod
-    def delete_event(event_id):
+    def delete_event(event_id, user_id):
         """
         Delete an event.
         :param event_id: ID of the event to delete
-        :return: True if deleted, False, Error message otherwise
+        :param user_id: ID of the user requesting deletion
+        :return: Boolean success, Error message
         """
         event = Event.query.get(event_id)
         if not event:
             return False, "Event not found"
+
+        # Check authorization
+        club = Club.query.get(event.club_id)
+        # If club is deleted, club might be None?
+        # Assuming cascade delete handles that, but here event exists so club should exist.
+        if club and club.owner_id != user_id:
+            user = User.query.get(user_id)
+            if not user or not user.is_admin:
+                return False, "Unauthorized: Only club owner or admin can delete events"
 
         try:
             db.session.delete(event)
