@@ -102,3 +102,16 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Event Details Page */
+.event-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 3rem;
+}
+
+@media (max-width: 1024px) {
+    .event-details-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -82,7 +82,48 @@ export const createClub = async (token, clubData) => {
     }
 };
 
-export const requestJoinClub = async (token, clubId, message) => {
+export const updateClub = async (token, clubId, clubData) => {
+    try {
+        const response = await fetch(`${API_URL}/${clubId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(clubData)
+        });
+        if (!response.ok) {
+             const err = await response.json();
+             throw new Error(err.error || 'Failed to update club');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
+export const deleteClub = async (token, clubId) => {
+    try {
+        const response = await fetch(`${API_URL}/${clubId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (!response.ok) {
+             const err = await response.json();
+             throw new Error(err.error || 'Failed to delete club');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
+export const requestJoinClub = async (token, clubId, message, role) => {
     try {
         const response = await fetch(`${API_URL}/${clubId}/join`, {
             method: 'POST',
@@ -90,7 +131,7 @@ export const requestJoinClub = async (token, clubId, message) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ message })
+            body: JSON.stringify({ message, role })
         });
         if (!response.ok) {
             const err = await response.json();

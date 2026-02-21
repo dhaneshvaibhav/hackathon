@@ -30,6 +30,8 @@ class Event(db.Model):
             'title': self.title,
             'description': self.description,
             'club_id': self.club_id,
+            'club_name': self.club.name if self.club else None,
+            'club_logo_url': self.club.logo_url if self.club else None,
             'poster_url': self.poster_url,
             'start_date': self.start_date.isoformat(),
             'end_date': self.end_date.isoformat(),
@@ -38,6 +40,7 @@ class Event(db.Model):
             'fee': self.fee,
             'status': self.status,
             'meta_data': self.meta_data,
+            'announcements': [announcement.to_dict() for announcement in self.announcements] if self.announcements else [],
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
         }
