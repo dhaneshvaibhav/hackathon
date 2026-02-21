@@ -24,6 +24,11 @@ class Config:
     GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET')
     GITHUB_REDIRECT_URI = os.environ.get('GITHUB_REDIRECT_URI')
 
+    # LinkedIn OAuth Config
+    LINKEDIN_CLIENT_ID = os.environ.get('LINKEDIN_CLIENT_ID')
+    LINKEDIN_CLIENT_SECRET = os.environ.get('LINKEDIN_CLIENT_SECRET')
+    LINKEDIN_REDIRECT_URI = os.environ.get('LINKEDIN_REDIRECT_URI')
+
 class DevelopmentConfig(Config):
     """Development configuration."""
     DEBUG = True

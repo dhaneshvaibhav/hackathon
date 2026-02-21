@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { handleGithubCallback } from '../functions/oauth';
+import { handleGithubCallback, handleLinkedinCallback } from '../functions/oauth';
 import { Loader } from 'lucide-react';
 
 // Use a module-level variable to track processed codes
@@ -15,6 +15,7 @@ const OAuthCallback = () => {
     useEffect(() => {
         const processCallback = async () => {
             const code = searchParams.get('code');
+            const state = searchParams.get('state');
             const token = localStorage.getItem('token');
             
             // Prevent processing the same code twice (Strict Mode fix)
@@ -39,9 +40,14 @@ const OAuthCallback = () => {
             }
 
             try {
-                await handleGithubCallback(token, code);
-                // Success - redirect back to profile
-                navigate('/profile', { state: { message: 'GitHub connected successfully!' } });
+                if (state === 'linkedin') {
+                    await handleLinkedinCallback(token, code);
+                    navigate('/profile', { state: { message: 'LinkedIn connected successfully!' } });
+                } else {
+                    // Default to GitHub for backward compatibility or explicit state
+                    await handleGithubCallback(token, code);
+                    navigate('/profile', { state: { message: 'GitHub connected successfully!' } });
+                }
             } catch (err) {
                 setError(err.message);
                 setTimeout(() => navigate('/profile'), 3000);
@@ -50,6 +56,12 @@ const OAuthCallback = () => {
 
         processCallback();
     }, [searchParams, navigate]);
+
+    const getProviderName = () => {
+        const state = searchParams.get('state');
+        if (state === 'linkedin') return 'LinkedIn';
+        return 'GitHub';
+    };
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
@@ -63,7 +75,7 @@ const OAuthCallback = () => {
                 ) : (
                     <div className="flex flex-col items-center">
                         <Loader className="w-12 h-12 text-blue-600 animate-spin mb-4" />
-                        <h2 className="text-xl font-semibold text-gray-800">Connecting to GitHub...</h2>
+                        <h2 className="text-xl font-semibold text-gray-800">Connecting to {getProviderName()}...</h2>
                         <p className="text-gray-500 mt-2">Please wait while we complete the connection.</p>
                     </div>
                 )}
