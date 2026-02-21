@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Compass, CalendarDays, Users, ArrowRight, ShieldAlert, LayoutDashboard, CheckCircle, XCircle } from 'lucide-react';
 import { getUserProfile } from '../functions/user';
-import { getManagedClubs, createClub } from '../functions/club';
+import { getManagedClubs, createClub, getClubRequests, handleClubRequest } from '../functions/club';
+import { uploadMedia } from '../functions/upload';
 import { createEvent, getEvents } from '../functions/event';
 import './Dashboard.css';
 
@@ -14,6 +15,8 @@ const AdminDashboard = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEventModal, setShowEventModal] = useState(false);
     const [newClub, setNewClub] = useState({ name: '', description: '', category: '', logo_url: '' });
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
     const [newEvent, setNewEvent] = useState({
         title: '',
         description: '',
@@ -72,16 +75,30 @@ const AdminDashboard = () => {
     const handleCreateClub = async (e) => {
         e.preventDefault();
         setCreateError('');
+        setUploading(true);
         const token = localStorage.getItem('token');
+        
         try {
-            const club = await createClub(token, newClub);
+            let logoUrl = newClub.logo_url;
+            
+            if (selectedFile) {
+                const uploadResult = await uploadMedia(token, selectedFile);
+                logoUrl = uploadResult.url;
+            }
+            
+            const clubData = { ...newClub, logo_url: logoUrl };
+            const club = await createClub(token, clubData);
+            
             setClubs([...clubs, club]);
             setShowCreateModal(false);
             setNewClub({ name: '', description: '', category: '', logo_url: '' });
+            setSelectedFile(null);
             setSuccessMessage('Club created successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             setCreateError(err.message);
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -283,12 +300,12 @@ const AdminDashboard = () => {
                                     />
                                 </div>
                                 <div style={{ marginBottom: '1rem' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Logo URL</label>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Club Logo</label>
                                     <input 
-                                        type="text" 
-                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                        value={newClub.logo_url}
-                                        onChange={(e) => setNewClub({...newClub, logo_url: e.target.value})}
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={(e) => setSelectedFile(e.target.files[0])}
+                                        style={{ width: '100%', padding: '0.5rem' }}
                                     />
                                 </div>
                                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
@@ -300,8 +317,8 @@ const AdminDashboard = () => {
                                     >
                                         Cancel
                                     </button>
-                                    <button type="submit" className="btn btn-primary">
-                                        Create Club
+                                    <button type="submit" className="btn btn-primary" disabled={uploading}>
+                                        {uploading ? 'Creating...' : 'Create Club'}
                                     </button>
                                 </div>
                             </form>
