@@ -96,9 +96,6 @@ const Dashboard = () => {
         <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh' }}>
             <main className="container" style={{ padding: '3rem 2rem' }}>
                 <div style={{ marginBottom: '3rem' }}>
-                    <h1 style={{ fontSize: '2.5rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>
-                        Welcome back, {user?.name?.split(' ')[0] || 'Student'}!
-                    </h1>
                     <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>
                         Here is what's happening in your campus community.
                     </p>
