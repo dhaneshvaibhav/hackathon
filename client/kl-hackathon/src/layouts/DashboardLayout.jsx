@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { Menu, Search, Bell, X, Check, User } from 'lucide-react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Menu, Search, Bell, X, Check, User, Shield, PlusCircle } from 'lucide-react';
 import { getManagedClubs, getClubRequests, handleClubRequest, getMyRequests } from '../functions/club';
-import { getUserProfile } from '../functions/user';
+import { getUserProfile, becomeCreator } from '../functions/user';
 import './DashboardLayout.css';
 
 const DashboardLayout = () => {
@@ -13,6 +13,8 @@ const DashboardLayout = () => {
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const location = useLocation();
+    const navigate = useNavigate();
     
     // Pass searchQuery to children via Outlet context
     
@@ -89,6 +91,30 @@ const DashboardLayout = () => {
         }
     };
 
+    const handleBecomeCreator = async () => {
+        if (window.confirm('Are you sure you want to become a creator? This will allow you to create and manage clubs.')) {
+            const token = localStorage.getItem('token');
+            try {
+                await becomeCreator(token);
+                alert('Congratulations! You are now a Creator.');
+                // Refresh user profile
+                const userData = await getUserProfile(token);
+                setUser(userData);
+                // Simple reload to update everything including sidebar
+                window.location.reload(); 
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+    };
+
+    const handleCreateClub = () => {
+        // Since there is no dedicated Create Club page in the current codebase,
+        // we'll assume there is one or we might need to implement one.
+        // For now, let's navigate to a create route.
+        navigate('/clubs/create');
+    };
+
     return (
         <div className="dashboard-layout">
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
@@ -113,7 +139,49 @@ const DashboardLayout = () => {
                         </div>
                     </div>
 
-                    <div className="header-right" style={{ position: 'relative' }}>
+                    <div className="header-right" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        {location.pathname === '/clubs' && user && (
+                            !user.is_admin ? (
+                                <button 
+                                    onClick={handleBecomeCreator}
+                                    style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: '0.5rem', 
+                                        padding: '0.5rem 1rem', 
+                                        fontSize: '0.9rem',
+                                        backgroundColor: '#2563EB',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    <Shield size={16} /> Become Creator
+                                </button>
+                            ) : (
+                                <button 
+                                    onClick={handleCreateClub}
+                                    style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: '0.5rem', 
+                                        padding: '0.5rem 1rem', 
+                                        fontSize: '0.9rem',
+                                        backgroundColor: '#16A34A',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    <PlusCircle size={16} /> Create Club
+                                </button>
+                            )
+                        )}
+
                         <button 
                             className="notification-btn" 
                             onClick={(e) => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CalendarDays, Users, ArrowRight } from 'lucide-react';
 import { getUserProfile } from '../functions/user';
-import { getManagedClubs } from '../functions/club';
+import { getManagedClubs, createClub } from '../functions/club';
 import { uploadMedia } from '../functions/upload';
 import { createEvent, getEvents, createAnnouncement } from '../functions/event';
 import './Dashboard.css';
@@ -12,6 +12,19 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [clubs, setClubs] = useState([]);
     const [events, setEvents] = useState([]);
+    
+    // Club Creation State
+    const [showCreateClubModal, setShowCreateClubModal] = useState(false);
+    const [creatingClub, setCreatingClub] = useState(false);
+    const [newClubData, setNewClubData] = useState({
+        name: '',
+        description: '',
+        category: '',
+        logo_url: '',
+        roles: ['Member']
+    });
+    const [createClubError, setCreateClubError] = useState('');
+
     const [showEventModal, setShowEventModal] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [uploading, setUploading] = useState(false);
@@ -34,6 +47,30 @@ const AdminDashboard = () => {
     const [successMessage, setSuccessMessage] = useState('');
     
     const navigate = useNavigate();
+
+    const handleCreateClub = async (e) => {
+        e.preventDefault();
+        setCreatingClub(true);
+        setCreateClubError('');
+        
+        const token = localStorage.getItem('token');
+        try {
+            await createClub(token, newClubData);
+            setSuccessMessage('Club created successfully!');
+            setShowCreateClubModal(false);
+            setNewClubData({ name: '', description: '', category: '', logo_url: '', roles: ['Member'] });
+            
+            // Refresh managed clubs list
+            const clubsData = await getManagedClubs(token);
+            setClubs(clubsData);
+            
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            setCreateClubError(err.message || 'Failed to create club');
+        } finally {
+            setCreatingClub(false);
+        }
+    };
 
     const handleCreateAnnouncement = async (e) => {
         e.preventDefault();
@@ -164,14 +201,23 @@ const AdminDashboard = () => {
 
                 {/* Dashboard Stats */}
                 <div className="dashboard-stats-grid">
-                    <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ backgroundColor: '#e0e7ff', color: '#4f46e5', padding: '1rem', borderRadius: '50%' }}>
-                            <Users size={24} />
+                    <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div style={{ backgroundColor: '#e0e7ff', color: '#4f46e5', padding: '1rem', borderRadius: '50%' }}>
+                                <Users size={24} />
+                            </div>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>{clubs.length}</h3>
+                                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Managed Clubs</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>{clubs.length}</h3>
-                            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Managed Clubs</p>
-                        </div>
+                        <button 
+                            onClick={() => setShowCreateClubModal(true)}
+                            className="btn-primary"
+                            style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                        >
+                            + Create Club
+                        </button>
                     </div>
                 </div>
 
@@ -240,6 +286,67 @@ const AdminDashboard = () => {
                     </section>
                 </div>
 
+                {/* Create Club Modal */}
+                {showCreateClubModal && (
+                    <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                        <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
+                            <h2 style={{ marginBottom: '1.5rem' }}>Create New Club</h2>
+                            {createClubError && <div style={{ color: 'red', marginBottom: '1rem' }}>{createClubError}</div>}
+                            <form onSubmit={handleCreateClub}>
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Club Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        value={newClubData.name}
+                                        onChange={(e) => setNewClubData({...newClubData, name: e.target.value})}
+                                        placeholder="e.g. Coding Club"
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Category</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        value={newClubData.category}
+                                        onChange={(e) => setNewClubData({...newClubData, category: e.target.value})}
+                                        placeholder="e.g. Technology"
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Description</label>
+                                    <textarea
+                                        required
+                                        rows="4"
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', resize: 'vertical' }}
+                                        value={newClubData.description}
+                                        onChange={(e) => setNewClubData({...newClubData, description: e.target.value})}
+                                        placeholder="Describe your club..."
+                                    />
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-outline"
+                                        style={{ padding: '0.5rem 1rem', border: '1px solid #ccc', borderRadius: '4px', background: 'transparent' }}
+                                        onClick={() => setShowCreateClubModal(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="btn btn-primary" disabled={creatingClub}>
+                                        {creatingClub ? 'Creating...' : 'Create Club'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+                
                 {/* Announcement Modal */}
                 {showAnnouncementModal && selectedEvent && (
                     <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
