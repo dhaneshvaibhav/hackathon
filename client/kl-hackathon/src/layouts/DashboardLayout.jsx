@@ -4,7 +4,7 @@ import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { Menu, Search, Bell, X, Check, User, Shield, PlusCircle } from 'lucide-react';
 import { getManagedClubs, getClubRequests, handleClubRequest, getMyRequests } from '../functions/club';
 import { getUserProfile, becomeCreator } from '../functions/user';
-import ChatAssistant from '../components/ChatAssistant';
+// import ChatAssistant from '../components/ChatAssistant';
 import FullPageChat from '../components/FullPageChat';
 import { MessageSquare, Layout } from 'lucide-react';
 import './DashboardLayout.css';
@@ -289,7 +289,7 @@ const DashboardLayout = () => {
                 <main className="dashboard-content" style={isAIMode ? { padding: 0, height: 'calc(100vh - 64px)', overflow: 'hidden' } : {}}>
                     <Outlet context={{ searchQuery, chatMessages, setChatMessages, chatInput, setChatInput }} />
                 </main>
-                {!isAIMode && <ChatAssistant />}
+                {/* {!isAIMode && <ChatAssistant />} */}
             </div>
         </div>
     );
