@@ -140,48 +140,6 @@ const DashboardLayout = () => {
                     </div>
 
                     <div className="header-right" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        {location.pathname === '/clubs' && user && (
-                            !user.is_admin ? (
-                                <button 
-                                    onClick={handleBecomeCreator}
-                                    style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        gap: '0.5rem', 
-                                        padding: '0.5rem 1rem', 
-                                        fontSize: '0.9rem',
-                                        backgroundColor: '#2563EB',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer',
-                                        fontWeight: 600
-                                    }}
-                                >
-                                    <Shield size={16} /> Become Creator
-                                </button>
-                            ) : (
-                                <button 
-                                    onClick={handleCreateClub}
-                                    style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        gap: '0.5rem', 
-                                        padding: '0.5rem 1rem', 
-                                        fontSize: '0.9rem',
-                                        backgroundColor: '#16A34A',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer',
-                                        fontWeight: 600
-                                    }}
-                                >
-                                    <PlusCircle size={16} /> Create Club
-                                </button>
-                            )
-                        )}
-
                         <button 
                             className="notification-btn" 
                             onClick={(e) => {
