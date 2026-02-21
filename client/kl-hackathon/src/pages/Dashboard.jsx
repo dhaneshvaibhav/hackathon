@@ -141,27 +141,94 @@ const Dashboard = () => {
                         Search Results for "{searchQuery}"
                     </h2>
                     
-                    <div className="dashboard-content-grid" style={{ gap: '2rem' }}>
+                    <div className="dashboard-content-grid" style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
                         {/* Clubs Results */}
-                        <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                            <h3 style={{ fontSize: '1.25rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-                                Clubs ({filteredClubs.length})
+                        <section>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-main)', marginBottom: '1.5rem' }}>
+                                Clubs <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>({filteredClubs.length})</span>
                             </h3>
                             {filteredClubs.length === 0 ? (
-                                <p>No clubs found.</p>
+                                <div style={{ padding: '2rem', backgroundColor: 'white', borderRadius: '12px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                    No clubs found matching your search.
+                                </div>
                             ) : (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
                                     {filteredClubs.map(club => (
-                                        <div key={club.id} style={{ padding: '1rem', border: '1px solid #eee', borderRadius: '8px' }}>
-                                            <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--primary)' }}>{club.name}</h4>
-                                            <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{club.category}</p>
-                                            <p style={{ margin: 0, fontSize: '0.9rem' }}>{club.description?.substring(0, 100)}...</p>
+                                        <div key={club.id} style={{ 
+                                            backgroundColor: 'white', 
+                                            borderRadius: '16px', 
+                                            boxShadow: '0 4px 6px rgba(0,0,0,0.05)', 
+                                            border: '1px solid #e2e8f0',
+                                            padding: '1.5rem',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            transition: 'transform 0.2s, box-shadow 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform = 'translateY(-4px)';
+                                            e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform = 'none';
+                                            e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
+                                        }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                                <div style={{ 
+                                                    width: '48px', 
+                                                    height: '48px', 
+                                                    borderRadius: '12px', 
+                                                    backgroundColor: '#eff6ff', 
+                                                    color: '#2563eb',
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    justifyContent: 'center' 
+                                                }}>
+                                                    <Users size={24} />
+                                                </div>
+                                                <span style={{ 
+                                                    fontSize: '0.75rem', 
+                                                    padding: '0.25rem 0.75rem', 
+                                                    borderRadius: '20px', 
+                                                    backgroundColor: '#f1f5f9', 
+                                                    color: '#64748b',
+                                                    fontWeight: '500'
+                                                }}>
+                                                    {club.category || 'General'}
+                                                </span>
+                                            </div>
+                                            <h4 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--text-main)' }}>{club.name}</h4>
+                                            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '1.5rem', flex: 1 }}>
+                                                {club.description?.length > 100 ? club.description.substring(0, 100) + '...' : club.description}
+                                            </p>
                                             <button 
                                                 className="btn btn-outline" 
-                                                style={{ marginTop: '1rem', width: '100%', padding: '0.5rem' }}
+                                                style={{ 
+                                                    width: '100%', 
+                                                    padding: '0.75rem',
+                                                    borderRadius: '8px',
+                                                    fontWeight: '500',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '0.5rem',
+                                                    border: '1px solid #e2e8f0',
+                                                    backgroundColor: 'transparent',
+                                                    color: 'var(--text-main)',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.backgroundColor = '#f8fafc';
+                                                    e.currentTarget.style.borderColor = '#cbd5e1';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                                    e.currentTarget.style.borderColor = '#e2e8f0';
+                                                }}
                                                 onClick={() => handleJoinRequest(club.id)}
                                             >
-                                                Join
+                                                Join Club
                                             </button>
                                         </div>
                                     ))}
@@ -170,30 +237,75 @@ const Dashboard = () => {
                         </section>
 
                         {/* Events Results */}
-                        <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                            <h3 style={{ fontSize: '1.25rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-                                Events ({filteredEvents.length})
+                        <section>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-main)', marginBottom: '1.5rem' }}>
+                                Events <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>({filteredEvents.length})</span>
                             </h3>
                             {filteredEvents.length === 0 ? (
-                                <p>No events found.</p>
+                                <div style={{ padding: '2rem', backgroundColor: 'white', borderRadius: '12px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                    No events found matching your search.
+                                </div>
                             ) : (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
                                     {filteredEvents.map(event => (
-                                        <div key={event.id} style={{ padding: '1rem', border: '1px solid #eee', borderRadius: '8px' }}>
-                                            <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--primary)' }}>{event.title}</h4>
-                                            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                                    <CalendarDays size={14} />
-                                                    {new Date(event.start_date).toLocaleDateString()}
-                                                </span>
-                                                {event.location && (
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                                        <MapPin size={14} />
-                                                        {event.location}
-                                                    </span>
-                                                )}
+                                        <div key={event.id} style={{ 
+                                            backgroundColor: 'white', 
+                                            borderRadius: '16px', 
+                                            boxShadow: '0 4px 6px rgba(0,0,0,0.05)', 
+                                            border: '1px solid #e2e8f0',
+                                            overflow: 'hidden',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            transition: 'transform 0.2s, box-shadow 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform = 'translateY(-4px)';
+                                            e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform = 'none';
+                                            e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
+                                        }}
+                                        >
+                                            <div style={{ 
+                                                height: '140px', 
+                                                background: event.poster_url ? `url(${event.poster_url}) center/cover no-repeat` : 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: 'white'
+                                            }}>
+                                                {!event.poster_url && <CalendarDays size={48} opacity={0.5} />}
                                             </div>
-                                            <p style={{ margin: 0, fontSize: '0.9rem' }}>{event.description?.substring(0, 100)}...</p>
+                                            <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                                <div style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: '600', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                                                    {new Date(event.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {new Date(event.start_date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                                <h4 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem', lineHeight: '1.4', color: 'var(--text-main)' }}>{event.title}</h4>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                                                    <MapPin size={14} />
+                                                    <span>{event.location || 'TBD'}</span>
+                                                </div>
+                                                <Link to={`/events/${event.id}`} style={{ 
+                                                    marginTop: 'auto',
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    justifyContent: 'center',
+                                                    gap: '0.5rem',
+                                                    padding: '0.75rem',
+                                                    backgroundColor: '#f1f5f9',
+                                                    color: 'var(--text-main)',
+                                                    borderRadius: '8px',
+                                                    textDecoration: 'none',
+                                                    fontWeight: '500',
+                                                    transition: 'background-color 0.2s'
+                                                }}
+                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                                                >
+                                                    View Details
+                                                </Link>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
