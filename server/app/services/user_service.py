@@ -33,6 +33,21 @@ class UserService:
             return None, str(e)
 
     @staticmethod
+    def promote_to_admin(user_id):
+        user = User.query.get(user_id)
+        if not user:
+            return None, "User not found"
+        
+        user.is_admin = True
+        
+        try:
+            db.session.commit()
+            return user, None
+        except Exception as e:
+            db.session.rollback()
+            return None, str(e)
+
+    @staticmethod
     def delete_user(user_id):
         user = User.query.get(user_id)
         if not user:

@@ -25,6 +25,15 @@ def update_current_user_profile():
         
     return jsonify({'message': 'Profile updated successfully', 'user': user.to_dict()}), 200
 
+def become_creator():
+    current_user_id = get_jwt_identity()
+    user, error = UserService.promote_to_admin(current_user_id)
+    
+    if error:
+        return jsonify({'error': error}), 400
+        
+    return jsonify({'message': 'User promoted to creator successfully', 'user': user.to_dict()}), 200
+
 def delete_current_user_account():
     current_user_id = get_jwt_identity()
     

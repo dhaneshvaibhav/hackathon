@@ -75,6 +75,41 @@ export const updateUserProfile = async (token, profileData) => {
 };
 
 /**
+ * Promote user to creator (admin)
+ * @param {string} token - JWT access token
+ * @returns {Promise<Object>} Response data with updated user
+ */
+export const becomeCreator = async (token) => {
+    try {
+        const response = await fetch(`${API_URL}/users/me/become-creator`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to become creator');
+        }
+
+        // Update local storage
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            const currentUser = JSON.parse(storedUser);
+            const updatedUser = { ...currentUser, ...data.user };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+
+        return data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
  * Delete user account
  * @param {string} token - JWT access token
  * @returns {Promise<Object>} Success message

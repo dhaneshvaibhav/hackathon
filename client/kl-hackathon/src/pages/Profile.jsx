@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Edit2, Trash2, Save, X, Github, Linkedin, Twitter, Instagram } from 'lucide-react';
-import { getUserProfile, updateUserProfile, deleteUserAccount } from '../functions/user';
+import { User, Edit2, Trash2, Save, X, Github, Linkedin, Twitter, Instagram, Shield } from 'lucide-react';
+import { getUserProfile, updateUserProfile, deleteUserAccount, becomeCreator } from '../functions/user';
 
 const Profile = () => {
     const [user, setUser] = useState(null);
@@ -88,6 +88,20 @@ const Profile = () => {
                 [e.target.name]: e.target.value
             }
         });
+    };
+
+    const handleBecomeCreator = async () => {
+        if (window.confirm('Are you sure you want to become a creator? This will allow you to create and manage clubs.')) {
+            const token = localStorage.getItem('token');
+            try {
+                const response = await becomeCreator(token);
+                setUser(response.user);
+                alert('Congratulations! You are now a creator.');
+                window.location.reload(); 
+            } catch (err) {
+                setError(err.message);
+            }
+        }
     };
 
     if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading profile...</div>;
@@ -273,6 +287,24 @@ const Profile = () => {
                                     </div>
                                 )}
                             </div>
+
+                            {!user?.is_admin && (
+                                <div style={{ marginTop: '2rem', padding: '1.5rem', backgroundColor: '#eff6ff', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+                                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: 0, color: '#1e40af', fontSize: '1.1rem' }}>
+                                        <Shield size={20} /> Become a Creator
+                                    </h3>
+                                    <p style={{ color: '#1e3a8a', marginBottom: '1rem', lineHeight: '1.5' }}>
+                                        Upgrade your account to create and manage your own clubs. Join the community of leaders!
+                                    </p>
+                                    <button 
+                                        onClick={handleBecomeCreator} 
+                                        className="btn btn-primary"
+                                        style={{ backgroundColor: '#2563eb', borderColor: '#2563eb' }}
+                                    >
+                                        Upgrade to Creator
+                                    </button>
+                                </div>
+                            )}
 
                             <div style={{ borderTop: '1px solid #eee', marginTop: '3rem', paddingTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
                                 <button onClick={handleDelete} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', borderRadius: '4px', transition: 'background-color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fee2e2'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
