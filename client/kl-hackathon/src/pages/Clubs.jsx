@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext, useNavigate, Link } from 'react-router-dom';
-import { Users, CheckCircle, Clock, PlusCircle, ArrowRight } from 'lucide-react';
+import { Users, CheckCircle, Clock, PlusCircle, ArrowRight, Edit } from 'lucide-react';
 import './Dashboard.css';
 import { getClubs, getMyRequests, requestJoinClub } from '../functions/club';
 import { getUserProfile } from '../functions/user';
@@ -180,8 +180,12 @@ const Clubs = () => {
                                             </Link>
                                         </div>
                                         {status === 'owner' && (
-                                            <button disabled className="btn-secondary" style={{ width: '100%', cursor: 'default', opacity: 0.8 }}>
-                                                <CheckCircle size={16} /> Owner
+                                            <button 
+                                                onClick={() => navigate(`/clubs/${club.id}/edit`)}
+                                                className="btn-secondary" 
+                                                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                                            >
+                                                <Edit size={16} /> Edit Club
                                             </button>
                                         )}
                                         {status === 'member' && (

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getClub, requestJoinClub, getMyRequests } from '../functions/club';
 import { getUserProfile } from '../functions/user';
-import { Users, CheckCircle, Clock, PlusCircle, ArrowLeft } from 'lucide-react';
+import { Users, CheckCircle, Clock, PlusCircle, ArrowLeft, Edit } from 'lucide-react';
 import './Dashboard.css';
 
 const ClubDetails = () => {
@@ -189,8 +189,12 @@ const ClubDetails = () => {
                             
                             <div>
                                 {status === 'owner' && (
-                                    <button disabled className="btn-secondary" style={{ cursor: 'default', opacity: 0.8, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <CheckCircle size={16} /> Owner
+                                    <button 
+                                        onClick={() => navigate(`/clubs/${club.id}/edit`)}
+                                        className="btn-secondary"
+                                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                    >
+                                        <Edit size={16} /> Edit Club
                                     </button>
                                 )}
                                 {status === 'member' && (

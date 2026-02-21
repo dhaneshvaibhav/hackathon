@@ -14,6 +14,7 @@ import Clubs from './pages/Clubs';
 import Events from './pages/Events';
 import EventDetails from './pages/EventDetails';
 import ClubDetails from './pages/ClubDetails';
+import EditClub from './pages/EditClub';
 
 import './App.css';
 
@@ -41,6 +42,7 @@ function App() {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/clubs" element={<Clubs />} />
                     <Route path="/clubs/:id" element={<ClubDetails />} />
+                    <Route path="/clubs/:id/edit" element={<EditClub />} />
                     <Route path="/events" element={<Events />} />
                     <Route path="/events/:id" element={<EventDetails />} />
                     <Route path="/admin" element={<AdminDashboard />} />
