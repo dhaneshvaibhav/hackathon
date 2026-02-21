@@ -2,23 +2,49 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import { validateInstitutionalEmail } from '../functions/authValidation';
+import { signupUser } from '../functions/auth';
 import './Auth.css';
 
 const Signup = () => {
-    const [email, setEmail] = useState('');
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        role: '',
+        password: ''
+    });
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.id]: e.target.value
+        });
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setLoading(true);
 
-        if (!validateInstitutionalEmail(email)) {
+        if (!validateInstitutionalEmail(formData.email)) {
             setError('Please use your institutional or college email address (e.g., student@college.edu). Personal emails are not accepted.');
+            setLoading(false);
             return;
         }
 
-        navigate('/dashboard');
+        try {
+            await signupUser(formData);
+
+            // Redirect to login or dashboard
+            navigate('/login');
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -36,11 +62,11 @@ const Signup = () => {
                     <div className="form-row">
                         <div className="form-group flex-1">
                             <label htmlFor="firstName">First Name</label>
-                            <input type="text" id="firstName" placeholder="John" required />
+                            <input type="text" id="firstName" placeholder="John" value={formData.firstName} onChange={handleChange} required />
                         </div>
                         <div className="form-group flex-1">
                             <label htmlFor="lastName">Last Name</label>
-                            <input type="text" id="lastName" placeholder="Doe" required />
+                            <input type="text" id="lastName" placeholder="Doe" value={formData.lastName} onChange={handleChange} required />
                         </div>
                     </div>
 
@@ -50,15 +76,15 @@ const Signup = () => {
                             type="email"
                             id="email"
                             placeholder="student@college.edu"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={formData.email}
+                            onChange={handleChange}
                             required
                         />
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="role">I am a...</label>
-                        <select id="role" required>
+                        <select id="role" value={formData.role} onChange={handleChange} required>
                             <option value="">Select your role</option>
                             <option value="student">Student</option>
                             <option value="club_leader">Club Leader</option>
@@ -67,10 +93,12 @@ const Signup = () => {
 
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
-                        <input type="password" id="password" placeholder="Create a strong password" required />
+                        <input type="password" id="password" placeholder="Create a strong password" value={formData.password} onChange={handleChange} required />
                     </div>
 
-                    <button type="submit" className="btn btn-primary auth-btn">Sign Up</button>
+                    <button type="submit" className="btn btn-primary auth-btn" disabled={loading}>
+                        {loading ? 'Signing up...' : 'Sign Up'}
+                    </button>
                 </form>
 
                 <div className="auth-footer">

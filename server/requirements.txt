@@ -3,3 +3,5 @@ python-dotenv
 flask-cors
 flask-sqlalchemy
 psycopg2-binary
+flask-jwt-extended
+werkzeug
