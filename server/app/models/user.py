@@ -24,6 +24,7 @@ class User(db.Model):
             'is_admin': self.is_admin,
             'bio': self.bio,
             'social_media': self.social_media,
+            'oauth_accounts': [oauth.to_dict() for oauth in self.oauth_accounts],
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
         }

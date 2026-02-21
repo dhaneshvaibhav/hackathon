@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Edit2, Trash2, Save, X, Github, Linkedin, Twitter, Instagram, Shield, LogOut } from 'lucide-react';
 import { getUserProfile, updateUserProfile, deleteUserAccount, becomeCreator } from '../functions/user';
+import { connectGithub, disconnectGithub } from '../functions/oauth';
 
 const Profile = () => {
     const [user, setUser] = useState(null);
@@ -119,6 +120,33 @@ const Profile = () => {
 
     const initial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
 
+    const handleGithubConnect = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const data = await connectGithub(token);
+            if (data.url) {
+                window.location.href = data.url;
+            }
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    const handleGithubDisconnect = async () => {
+        if (!window.confirm('Are you sure you want to disconnect your GitHub account?')) return;
+        
+        const token = localStorage.getItem('token');
+        try {
+            await disconnectGithub(token);
+            // Refresh profile to show updated status
+            const userData = await getUserProfile(token);
+            setUser(userData);
+            alert('GitHub disconnected successfully');
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
     const renderEditableField = (field, label, value, placeholder, isTextArea = false) => {
         // We use a simplified inline editing state for individual fields to match the UI concept
         // But since the current state management is form-based, we'll adapt the UI to trigger the full edit mode
@@ -126,6 +154,10 @@ const Profile = () => {
         // Given the request "content should be not changes, just the how the things seeem",
         // we will restructure the display to look like the "Settings" page with cards.
         
+        const isGithub = field === 'github';
+        const isConnected = isGithub ? (user?.oauth_accounts?.some(acc => acc.provider === 'github')) : !!value;
+        const displayValue = isGithub && isConnected ? 'Connected' : (value || 'Not connected');
+
         return (
             <div style={{ 
                 marginBottom: '1rem', 
@@ -143,31 +175,51 @@ const Profile = () => {
                      <div style={{ width: '180px', color: 'var(--text-main)', fontWeight: 600, fontSize: '1rem' }}>
                         {label}
                      </div>
-                     <div style={{ flex: 1, color: value ? 'var(--text-muted)' : '#94a3b8', fontSize: '0.95rem' }}>
-                        {value || 'Not connected'}
+                     <div style={{ flex: 1, color: isConnected ? 'var(--text-muted)' : '#94a3b8', fontSize: '0.95rem' }}>
+                        {displayValue}
                      </div>
                 </div>
                 
-                <button
-                    onClick={() => {
-                        setIsEditing(true);
-                        // Optional: focus specific field if we were to implement detailed focus logic
-                    }}
-                    style={{ 
-                        padding: '0.5rem 1.25rem',
-                        backgroundColor: value ? 'transparent' : 'var(--primary)',
-                        color: value ? 'var(--text-main)' : 'white',
-                        border: value ? '1px solid #E2E8F0' : 'none',
-                        borderRadius: '6px',
-                        fontWeight: 600,
-                        fontSize: '0.875rem',
-                        cursor: 'pointer',
-                        minWidth: '100px',
-                        textAlign: 'center'
-                    }}
-                >
-                    {value ? 'Reconnect' : 'Connect'}
-                </button>
+                {isGithub ? (
+                    <button
+                        onClick={isConnected ? handleGithubDisconnect : handleGithubConnect}
+                        style={{ 
+                            padding: '0.5rem 1.25rem',
+                            backgroundColor: isConnected ? 'transparent' : 'var(--primary)',
+                            color: isConnected ? 'var(--text-main)' : 'white',
+                            border: isConnected ? '1px solid #E2E8F0' : 'none',
+                            borderRadius: '6px',
+                            fontWeight: 600,
+                            fontSize: '0.875rem',
+                            cursor: 'pointer',
+                            minWidth: '100px',
+                            textAlign: 'center'
+                        }}
+                    >
+                        {isConnected ? 'Disconnect' : 'Connect'}
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => {
+                            setIsEditing(true);
+                            // Optional: focus specific field if we were to implement detailed focus logic
+                        }}
+                        style={{ 
+                            padding: '0.5rem 1.25rem',
+                            backgroundColor: value ? 'transparent' : 'var(--primary)',
+                            color: value ? 'var(--text-main)' : 'white',
+                            border: value ? '1px solid #E2E8F0' : 'none',
+                            borderRadius: '6px',
+                            fontWeight: 600,
+                            fontSize: '0.875rem',
+                            cursor: 'pointer',
+                            minWidth: '100px',
+                            textAlign: 'center'
+                        }}
+                    >
+                        {value ? 'Edit' : 'Connect'}
+                    </button>
+                )}
             </div>
         );
     };
