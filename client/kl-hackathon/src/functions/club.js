@@ -72,8 +72,8 @@ export const createClub = async (token, clubData) => {
             body: JSON.stringify(clubData)
         });
         if (!response.ok) {
-             const err = await response.json();
-             throw new Error(err.error || 'Failed to create club');
+            const err = await response.json();
+            throw new Error(err.error || 'Failed to create club');
         }
         return await response.json();
     } catch (error) {

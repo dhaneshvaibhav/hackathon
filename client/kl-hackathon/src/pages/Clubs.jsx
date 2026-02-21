@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext, useNavigate, Link } from 'react-router-dom';
-import { Users, CheckCircle, Clock, PlusCircle, ArrowRight, Edit } from 'lucide-react';
+import { Users, CheckCircle, Clock, PlusCircle, ArrowRight, Edit, X, Upload } from 'lucide-react';
 import './Dashboard.css';
 import { getClubs, getMyRequests, requestJoinClub, createClub } from '../functions/club';
 import { getUserProfile } from '../functions/user';
+import { uploadMedia } from '../functions/upload';
 
 const Clubs = () => {
     const { searchQuery } = useOutletContext() || { searchQuery: '' };
@@ -26,6 +27,27 @@ const Clubs = () => {
         logo_url: '',
         roles: ['Member']
     });
+    const [uploading, setUploading] = useState(false);
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploading(true);
+        const token = localStorage.getItem('token');
+        try {
+            const data = await uploadMedia(token, file);
+            setNewClubData(prev => ({
+                ...prev,
+                logo_url: data.url
+            }));
+        } catch (err) {
+            setError('Failed to upload image');
+            console.error(err);
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const handleCreateInputChange = (e) => {
         const { name, value } = e.target;
@@ -134,6 +156,13 @@ const Clubs = () => {
                         </h1>
                         <p style={{ color: 'var(--text-muted)' }}>Find and join communities that match your interests.</p>
                     </div>
+                    <button 
+                        onClick={() => setShowCreateModal(true)}
+                        className="btn-primary"
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    >
+                        <PlusCircle size={20} /> Create Club
+                    </button>
                 </div>
 
                 {successMessage && (
@@ -297,6 +326,29 @@ const Clubs = () => {
 
                             <form onSubmit={handleCreateClub}>
                                 <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Club Logo</label>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        {newClubData.logo_url && (
+                                            <img 
+                                                src={newClubData.logo_url} 
+                                                alt="Preview" 
+                                                style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }}
+                                            />
+                                        )}
+                                        <label className="btn-secondary" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <Upload size={16} />
+                                            {uploading ? 'Uploading...' : 'Upload Logo'}
+                                            <input 
+                                                type="file" 
+                                                accept="image/*" 
+                                                onChange={handleFileChange}
+                                                style={{ display: 'none' }}
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div style={{ marginBottom: '1rem' }}>
                                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Club Name</label>
                                     <input
                                         type="text"
@@ -347,10 +399,10 @@ const Clubs = () => {
                                     <button
                                         type="submit"
                                         className="btn-primary"
-                                        disabled={creating}
-                                        style={{ padding: '0.75rem 1.5rem', opacity: creating ? 0.7 : 1 }}
+                                        disabled={creating || uploading}
+                                        style={{ padding: '0.75rem 1.5rem', opacity: (creating || uploading) ? 0.7 : 1 }}
                                     >
-                                        {creating ? 'Creating...' : 'Create Club'}
+                                        {creating ? 'Creating...' : (uploading ? 'Uploading...' : 'Create Club')}
                                     </button>
                                 </div>
                             </form>
