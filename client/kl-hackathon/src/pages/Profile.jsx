@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Edit2, Trash2, Save, X, Github, Linkedin, Twitter, Instagram, Shield } from 'lucide-react';
+import { User, Edit2, Trash2, Save, X, Github, Linkedin, Twitter, Instagram, Shield, LogOut } from 'lucide-react';
 import { getUserProfile, updateUserProfile, deleteUserAccount, becomeCreator } from '../functions/user';
 
 const Profile = () => {
@@ -101,6 +101,14 @@ const Profile = () => {
             } catch (err) {
                 setError(err.message);
             }
+        }
+    };
+
+    const handleLogout = () => {
+        if (window.confirm('Are you sure you want to log out?')) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            navigate('/login');
         }
     };
 
@@ -358,7 +366,32 @@ const Profile = () => {
 
                 {/* Danger Zone */}
                 {!isEditing && (
-                    <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+                    <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                        <button 
+                            onClick={handleLogout} 
+                            style={{ 
+                                color: '#4B5563', 
+                                background: 'white', 
+                                border: '1px solid #D1D5DB', 
+                                cursor: 'pointer', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '0.5rem', 
+                                padding: '0.75rem 1.5rem', 
+                                borderRadius: '6px', 
+                                transition: 'all 0.2s', 
+                                fontWeight: 600 
+                            }} 
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.backgroundColor = '#F3F4F6';
+                            }} 
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = 'white';
+                            }}
+                        >
+                            <LogOut size={18} /> Logout
+                        </button>
+
                         <button 
                             onClick={handleDelete} 
                             style={{ 
