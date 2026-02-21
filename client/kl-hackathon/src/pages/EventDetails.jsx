@@ -127,6 +127,30 @@ const EventDetails = () => {
                             </div>
                         </div>
 
+                        {event.link && (
+                            <div style={{ marginBottom: '2rem' }}>
+                                <a 
+                                    href={event.link} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="btn btn-primary"
+                                    style={{ 
+                                        display: 'inline-block', 
+                                        padding: '0.75rem 2rem', 
+                                        fontSize: '1.1rem', 
+                                        textDecoration: 'none',
+                                        borderRadius: '8px',
+                                        backgroundColor: '#2563eb',
+                                        color: 'white',
+                                        fontWeight: 'bold',
+                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                                    }}
+                                >
+                                    Join / Register
+                                </a>
+                            </div>
+                        )}
+
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', marginBottom: '2rem', padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
                                 <Calendar className="text-primary" size={24} />

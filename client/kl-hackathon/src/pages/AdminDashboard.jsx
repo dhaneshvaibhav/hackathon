@@ -129,6 +129,7 @@ const AdminDashboard = () => {
                 start_date: '',
                 end_date: '',
                 location: '',
+                link: '',
                 fee: 0,
                 status: 'upcoming'
             });
@@ -349,6 +350,17 @@ const AdminDashboard = () => {
                                         style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
                                         value={newEvent.location}
                                         onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Registration/Join Link</label>
+                                    <input 
+                                        type="url" 
+                                        placeholder="https://example.com/register"
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        value={newEvent.link}
+                                        onChange={(e) => setNewEvent({...newEvent, link: e.target.value})}
                                     />
                                 </div>
 
