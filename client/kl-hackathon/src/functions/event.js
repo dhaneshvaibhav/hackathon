@@ -86,18 +86,22 @@ export const updateEvent = async (token, eventId, eventData) => {
     }
 };
 
-export const deleteEvent = async (token, eventId) => {
+export const createAnnouncement = async (token, eventId, announcementData) => {
     try {
-        const response = await fetch(`${API_URL}/${eventId}`, {
-            method: 'DELETE',
+        const response = await fetch(`${BASE_URL}/announcements/`, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
+            body: JSON.stringify({
+                event_id: eventId,
+                ...announcementData
+            })
         });
         if (!response.ok) {
              const err = await response.json();
-             throw new Error(err.error || 'Failed to delete event');
+             throw new Error(err.error || 'Failed to create announcement');
         }
         return await response.json();
     } catch (error) {

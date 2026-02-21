@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Compass, CalendarDays, Users, ArrowRight, ShieldAlert, LayoutDashboard, CheckCircle, XCircle } from 'lucide-react';
+import { CalendarDays, Users, ArrowRight } from 'lucide-react';
 import { getUserProfile } from '../functions/user';
-import { getManagedClubs, createClub, getClubRequests, handleClubRequest } from '../functions/club';
-import { uploadMedia } from '../functions/upload';
-import { createEvent, getEvents } from '../functions/event';
+import { getManagedClubs } from '../functions/club';
+import { createEvent, getEvents, createAnnouncement } from '../functions/event';
 import './Dashboard.css';
 
 const AdminDashboard = () => {
@@ -12,12 +11,7 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [clubs, setClubs] = useState([]);
     const [events, setEvents] = useState([]);
-    const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEventModal, setShowEventModal] = useState(false);
-    const [newClub, setNewClub] = useState({ name: '', description: '', category: '', logo_url: '' });
-    const [isOtherCategory, setIsOtherCategory] = useState(false);
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [uploading, setUploading] = useState(false);
     const [newEvent, setNewEvent] = useState({
         title: '',
         description: '',
@@ -29,11 +23,33 @@ const AdminDashboard = () => {
         fee: 0,
         status: 'upcoming'
     });
-    const [createError, setCreateError] = useState('');
     const [eventError, setEventError] = useState('');
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+    const [announcement, setAnnouncement] = useState({ title: '', content: '' });
+    const [announcementError, setAnnouncementError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     
     const navigate = useNavigate();
+
+    const handleCreateAnnouncement = async (e) => {
+        e.preventDefault();
+        setAnnouncementError('');
+        const token = localStorage.getItem('token');
+        
+        try {
+            await createAnnouncement(token, selectedEvent.id, announcement);
+            
+            setShowAnnouncementModal(false);
+            setAnnouncement({ title: '', content: '' });
+            setSelectedEvent(null);
+            setSuccessMessage('Announcement published successfully!');
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            setAnnouncementError(err.message);
+        }
+    };
+
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -72,38 +88,6 @@ const AdminDashboard = () => {
 
         fetchUserData();
     }, [navigate]);
-
-    const handleCreateClub = async (e) => {
-        e.preventDefault();
-        setCreateError('');
-        setUploading(true);
-        const token = localStorage.getItem('token');
-        
-        try {
-            let logoUrl = newClub.logo_url;
-            
-            if (selectedFile) {
-                const uploadResult = await uploadMedia(token, selectedFile);
-                logoUrl = uploadResult.url;
-            }
-            
-            const clubData = { ...newClub, logo_url: logoUrl };
-            const club = await createClub(token, clubData);
-            
-            setClubs([...clubs, club]);
-            setShowCreateModal(false);
-            setNewClub({ name: '', description: '', category: '', logo_url: '' });
-
-            setIsOtherCategory(false);
-            setSelectedFile(null);
-            setSuccessMessage('Club created successfully!');
-            setTimeout(() => setSuccessMessage(''), 3000);
-        } catch (err) {
-            setCreateError(err.message);
-        } finally {
-            setUploading(false);
-        }
-    };
 
     const handleCreateEvent = async (e) => {
         e.preventDefault();
@@ -188,32 +172,7 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="dashboard-content-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '2rem' }}>
-                    
-                    {/* Club Management */}
-                    <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #eee', paddingBottom: '1rem' }}>
-                            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>My Clubs</h3>
-                            <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
-                                + Create Club
-                            </button>
-                        </div>
-                        
-                        {clubs.length === 0 ? (
-                            <p>You haven't created any clubs yet.</p>
-                        ) : (
-                            <ul style={{ listStyle: 'none', padding: 0 }}>
-                                {clubs.map(club => (
-                                    <li key={club.id} style={{ padding: '1rem', borderBottom: '1px solid #f0f0f0' }}>
-                                        <div style={{ fontWeight: 'bold' }}>{club.name}</div>
-                                        <div style={{ fontSize: '0.9rem', color: '#666' }}>{club.category}</div>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </section>
-
-
+                <div className="dashboard-content-grid" style={{ gridTemplateColumns: '1fr', gap: '2rem', marginTop: '2rem' }}>
                     
                     {/* Event Management */}
                     <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
@@ -259,6 +218,16 @@ const AdminDashboard = () => {
                                             <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0 }}>
                                                 {clubs.find(c => c.id === event.club_id)?.name || 'Unknown Club'}
                                             </p>
+                                            <button 
+                                                className="btn btn-primary" 
+                                                style={{ marginTop: '1rem', width: '100%', padding: '0.5rem', fontSize: '0.9rem' }}
+                                                onClick={() => {
+                                                    setSelectedEvent(event);
+                                                    setShowAnnouncementModal(true);
+                                                }}
+                                            >
+                                                Announce
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
@@ -267,92 +236,53 @@ const AdminDashboard = () => {
                     </section>
                 </div>
 
-                {/* Create Club Modal */}
-                {showCreateModal && (
+                {/* Announcement Modal */}
+                {showAnnouncementModal && selectedEvent && (
                     <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-                        <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
-                            <h2 style={{ marginBottom: '1.5rem' }}>Create New Club</h2>
-                            {createError && <div style={{ color: 'red', marginBottom: '1rem' }}>{createError}</div>}
-                            <form onSubmit={handleCreateClub}>
+                        <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '500px' }}>
+                            <h2 style={{ marginBottom: '1rem' }}>Make Announcement for {selectedEvent.title}</h2>
+                            {announcementError && <div style={{ color: 'red', marginBottom: '1rem' }}>{announcementError}</div>}
+                            <form onSubmit={handleCreateAnnouncement}>
                                 <div style={{ marginBottom: '1rem' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Club Name</label>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Title</label>
                                     <input 
                                         type="text" 
                                         required 
                                         style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                        value={newClub.name}
-                                        onChange={(e) => setNewClub({...newClub, name: e.target.value})}
+                                        value={announcement.title}
+                                        onChange={(e) => setAnnouncement({...announcement, title: e.target.value})}
                                     />
                                 </div>
                                 <div style={{ marginBottom: '1rem' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Category</label>
-                                    <select 
-                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', marginBottom: isOtherCategory ? '0.5rem' : '0' }}
-                                        value={isOtherCategory ? 'Other' : newClub.category}
-                                        onChange={(e) => {
-                                            if (e.target.value === 'Other') {
-                                                setIsOtherCategory(true);
-                                                setNewClub({...newClub, category: ''});
-                                            } else {
-                                                setIsOtherCategory(false);
-                                                setNewClub({...newClub, category: e.target.value});
-                                            }
-                                        }}
-                                    >
-                                        <option value="">-- Select Category --</option>
-                                        <option value="Academic">Academic</option>
-                                        <option value="Sports">Sports</option>
-                                        <option value="Arts">Arts</option>
-                                        <option value="Technology">Technology</option>
-                                        <option value="Community Service">Community Service</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                    {isOtherCategory && (
-                                        <input 
-                                            type="text" 
-                                            placeholder="Enter custom category"
-                                            style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                            value={newClub.category}
-                                            onChange={(e) => setNewClub({...newClub, category: e.target.value})}
-                                        />
-                                    )}
-                                </div>
-                                <div style={{ marginBottom: '1rem' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Description</label>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Content</label>
                                     <textarea 
+                                        required 
+                                        rows="4"
                                         style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                        rows="3"
-                                        value={newClub.description}
-                                        onChange={(e) => setNewClub({...newClub, description: e.target.value})}
-                                    />
-                                </div>
-                                <div style={{ marginBottom: '1rem' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Club Logo</label>
-                                    <input 
-                                        type="file" 
-                                        accept="image/*"
-                                        onChange={(e) => setSelectedFile(e.target.files[0])}
-                                        style={{ width: '100%', padding: '0.5rem' }}
-                                    />
+                                        value={announcement.content}
+                                        onChange={(e) => setAnnouncement({...announcement, content: e.target.value})}
+                                    ></textarea>
                                 </div>
                                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                                     <button 
                                         type="button" 
-                                        className="btn btn-outline"
-                                        style={{ padding: '0.5rem 1rem', border: '1px solid #ccc', borderRadius: '4px', background: 'transparent' }}
-                                        onClick={() => setShowCreateModal(false)}
+                                        className="btn btn-outline" 
+                                        onClick={() => {
+                                            setShowAnnouncementModal(false);
+                                            setAnnouncement({ title: '', content: '' });
+                                            setSelectedEvent(null);
+                                        }}
                                     >
                                         Cancel
                                     </button>
-                                    <button type="submit" className="btn btn-primary" disabled={uploading}>
-                                        {uploading ? 'Creating...' : 'Create Club'}
+                                    <button type="submit" className="btn btn-primary">
+                                        Publish
                                     </button>
                                 </div>
                             </form>
                         </div>
                     </div>
                 )}
-
                 {/* Create Event Modal */}
                 {showEventModal && (
                     <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
