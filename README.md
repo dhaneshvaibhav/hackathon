@@ -58,6 +58,7 @@ hackathon/
 │   └── requirements.txt    # Python dependencies
 │
 ├── DESIGN_AND_REQUIREMENTS.md # Detailed design doc
+├── API_DOCUMENTATION.md    # Complete API Reference
 └── README.md               # This file
 ```
 
@@ -69,6 +70,7 @@ hackathon/
 - Node.js & npm
 - Python 3.x
 - PostgreSQL (or Neon DB account)
+- Google Gemini API Key (for AI Assistant)
 
 ### 1. Backend Setup
 Navigate to the server directory:
@@ -91,13 +93,64 @@ pip install -r requirements.txt
 ```
 
 Set up Environment Variables:
-Create a `.env` file in the `server/` directory and add your database URL:
+Create a `.env` file in the `server/` directory and add your database URL and API keys:
 ```
 DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
 SECRET_KEY=your-secret-key
 JWT_SECRET_KEY=your-jwt-secret-key
 
-# OAuth Credentials (Optional but recommended)
+# OAuth Credentials (Optional)
+GITHUB_CLIENT_ID=...
+GITHUB_CLIENT_SECRET=...
+GITHUB_REDIRECT_URI=http://localhost:5173/oauth/callback
+
+LINKEDIN_CLIENT_ID=...
+LINKEDIN_CLIENT_SECRET=...
+LINKEDIN_REDIRECT_URI=http://localhost:5173/oauth/callback
+
+# AI Assistant
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+Run the server:
+```bash
+python run.py
+```
+
+### 2. Frontend Setup
+Navigate to the client directory:
+```bash
+cd client/kl-hackathon
+```
+
+Install dependencies:
+```bash
+npm install
+```
+
+Run the development server:
+```bash
+npm run dev
+```
+
+---
+
+## 🤖 AI Assistant
+
+The project includes an AI-powered Chat Assistant that allows users to manage clubs and events using natural language.
+
+**Features:**
+- **Creating Clubs**: "Create a new Tech club called AI Enthusiasts."
+- **Creating Events**: "Schedule a Hackathon for the AI Enthusiasts club on 2024-05-20."
+- **Listing Clubs**: "Show me all clubs."
+
+To enable this, ensure you have set the `GEMINI_API_KEY` in your `.env` file.
+
+---
+
+## 📚 API Documentation
+
+For detailed API documentation, please refer to [API_DOCUMENTATION.md](API_DOCUMENTATION.md).
 GITHUB_CLIENT_ID=your-github-client-id
 GITHUB_CLIENT_SECRET=your-github-client-secret
 LINKEDIN_CLIENT_ID=your-linkedin-client-id
