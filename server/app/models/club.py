@@ -1,6 +1,6 @@
 from app.extensions import db
 from datetime import datetime
-from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.dialects.postgresql import JSON, ARRAY
 
 class Club(db.Model):
     __tablename__ = 'clubs'
@@ -10,6 +10,7 @@ class Club(db.Model):
     description = db.Column(db.Text, nullable=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     members = db.Column(JSON, nullable=True, default=[])  # List of {user_id, role}
+    roles = db.Column(ARRAY(db.String), nullable=True, default=[])  # List of available roles
     logo_url = db.Column(db.String(255), nullable=True)
     category = db.Column(db.String(50), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -26,6 +27,7 @@ class Club(db.Model):
             'description': self.description,
             'owner_id': self.owner_id,
             'members': self.members,
+            'roles': self.roles,
             'logo_url': self.logo_url,
             'category': self.category,
             'created_at': self.created_at.isoformat(),

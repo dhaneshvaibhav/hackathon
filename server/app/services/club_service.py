@@ -25,6 +25,7 @@ class ClubService:
             owner_id=owner_id,
             category=data.get('category'),
             logo_url=data.get('logo_url'),
+            roles=data.get('roles', []),
             members=[{'user_id': owner_id, 'role': 'owner'}]
         )
         
@@ -88,6 +89,10 @@ class ClubService:
             
         if 'logo_url' in data:
             club.logo_url = data['logo_url']
+
+        if 'roles' in data:
+            club.roles = data['roles']
+            flag_modified(club, "roles")
 
         try:
             db.session.commit()
