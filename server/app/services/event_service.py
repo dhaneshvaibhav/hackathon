@@ -67,6 +67,7 @@ class EventService:
                 start_date=start_date,
                 end_date=end_date,
                 location=data.get('location'),
+                link=data.get('link'),
                 fee=data['fee'],
                 status=status,
                 meta_data=data.get('meta_data', {})
@@ -139,6 +140,8 @@ class EventService:
                 event.poster_url = data['poster_url']
             if 'location' in data:
                 event.location = data['location']
+            if 'link' in data:
+                event.link = data['link']
             if 'fee' in data:
                 event.fee = data['fee']
             if 'meta_data' in data:

@@ -13,6 +13,7 @@ class Event(db.Model):
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime, nullable=False)
     location = db.Column(db.String(255), nullable=True)
+    link = db.Column(db.String(255), nullable=True)
     fee = db.Column(db.Float, default=0.0)
     status = db.Column(db.String(20), default='upcoming')  # upcoming, ongoing, completed, cancelled
     meta_data = db.Column(JSON, nullable=True, default={})
@@ -33,6 +34,7 @@ class Event(db.Model):
             'start_date': self.start_date.isoformat(),
             'end_date': self.end_date.isoformat(),
             'location': self.location,
+            'link': self.link,
             'fee': self.fee,
             'status': self.status,
             'meta_data': self.meta_data,
