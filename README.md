@@ -13,7 +13,7 @@ A comprehensive web application for managing college clubs and communities. This
 ### Backend
 - **Python 3**
 - **Flask** (Web Framework)
-- **SQLAlchemy** (ORM) & **SQLite** (Database)
+- **SQLAlchemy** (ORM) & **PostgreSQL (Neon DB)** (Database)
 - **Flask-JWT-Extended** (Authentication)
 - **Flask-CORS** (Cross-Origin Resource Sharing)
 - **Flask-Migrate** (Database Migrations)
@@ -36,14 +36,16 @@ hackathon/
 ├── server/
 │   ├── app/
 │   │   ├── controllers/    # Request handling logic
-│   │   ├── models/         # Database models (User, etc.)
+│   │   ├── models/         # Database models (User, Club, Event)
 │   │   ├── routes/         # API endpoints
 │   │   ├── services/       # Business logic
+│   │   ├── utils/          # Helper functions
 │   │   └── ...
 │   ├── migrations/         # DB migration scripts
 │   ├── run.py              # Entry point
 │   └── requirements.txt    # Python dependencies
 │
+├── DESIGN_AND_REQUIREMENTS.md # Detailed design doc
 └── README.md               # This file
 ```
 
@@ -54,6 +56,7 @@ hackathon/
 ### Prerequisites
 - Node.js & npm
 - Python 3.x
+- PostgreSQL (or Neon DB account)
 
 ### 1. Backend Setup
 Navigate to the server directory:
@@ -73,6 +76,19 @@ source venv/bin/activate
 Install dependencies:
 ```bash
 pip install -r requirements.txt
+```
+
+Set up Environment Variables:
+Create a `.env` file in the `server/` directory and add your database URL:
+```
+DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
+SECRET_KEY=your-secret-key
+JWT_SECRET_KEY=your-jwt-secret-key
+```
+
+Run Database Migrations:
+```bash
+flask db upgrade
 ```
 
 Run the server:
@@ -97,17 +113,3 @@ Start the development server:
 npm run dev
 ```
 The application will be available at `http://localhost:5173`.
-
----
-
-## ✨ Features Implemented So Far
-- **Authentication System**:
-  - Sign Up (with institutional email validation)
-  - Login (JWT-based)
-- **Role Management**:
-  - Support for Students and Club Leaders.
-- **Database Integration**:
-  - User model with profile fields (bio, social links).
-
-## 📝 API Documentation
-See [DESIGN_AND_REQUIREMENTS.md](./DESIGN_AND_REQUIREMENTS.md) for detailed design, API endpoints, and data flow.

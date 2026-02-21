@@ -24,11 +24,13 @@ def create_app(config_name='default'):
     from app.routes.auth import auth_bp
     from app.routes.user import user_bp
     from app.routes.club import club_bp
+    from app.routes.event import event_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(user_bp, url_prefix='/api/users')
     app.register_blueprint(club_bp, url_prefix='/api/clubs')
+    app.register_blueprint(event_bp, url_prefix='/api/events')
 
     # Create tables for development
     with app.app_context():

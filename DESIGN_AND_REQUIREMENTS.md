@@ -2,7 +2,7 @@
 
 ## 1. Database Design
 
-The application currently uses **SQLite** for development, managed via **SQLAlchemy ORM**.
+The application uses **PostgreSQL (Neon DB)** for production and development, managed via **SQLAlchemy ORM**.
 
 ### 1.1. Models
 
@@ -19,6 +19,39 @@ Represents a registered user in the system.
 | `bio`           | Text          | Nullable                                      | User biography.                                  |
 | `social_media`  | JSON          | Nullable, Default: `{}`                       | JSON object for links (GitHub, LinkedIn, etc.).  |
 | `created_at`    | DateTime      | Default: `datetime.utcnow`                    | Timestamp of account creation.                   |
+| `updated_at`    | DateTime      | Default: `datetime.utcnow`, OnUpdate: `utcnow`| Timestamp of last update.                        |
+
+#### **Club Model (`clubs` table)**
+Represents a student club or organization.
+
+| Column Name     | Type          | Constraints                                   | Description                                      |
+|-----------------|---------------|-----------------------------------------------|--------------------------------------------------|
+| `id`            | Integer       | Primary Key                                   | Unique identifier for the club.                  |
+| `name`          | String(100)   | Unique, Not Null, Index                       | Name of the club.                                |
+| `description`   | Text          | Nullable                                      | Description of the club.                         |
+| `owner_id`      | Integer       | Foreign Key (`users.id`), Not Null            | ID of the club owner (User).                     |
+| `members`       | JSON          | Nullable, Default: `[]`                       | List of members with roles (JSON).               |
+| `logo_url`      | String(255)   | Nullable                                      | URL to the club's logo.                          |
+| `category`      | String(50)    | Nullable                                      | Category of the club (e.g., Tech, Arts).         |
+| `created_at`    | DateTime      | Default: `datetime.utcnow`                    | Timestamp of creation.                           |
+| `updated_at`    | DateTime      | Default: `datetime.utcnow`, OnUpdate: `utcnow`| Timestamp of last update.                        |
+
+#### **Event Model (`events` table)**
+Represents an event organized by a club.
+
+| Column Name     | Type          | Constraints                                   | Description                                      |
+|-----------------|---------------|-----------------------------------------------|--------------------------------------------------|
+| `id`            | Integer       | Primary Key                                   | Unique identifier for the event.                 |
+| `title`         | String(100)   | Not Null, Index                               | Title of the event.                              |
+| `description`   | Text          | Nullable                                      | Description of the event.                        |
+| `club_id`       | Integer       | Foreign Key (`clubs.id`), Not Null            | ID of the organizing club.                       |
+| `poster_url`    | String(255)   | Nullable                                      | URL to the event poster.                         |
+| `event_date`    | DateTime      | Not Null                                      | Date and time of the event.                      |
+| `location`      | String(255)   | Nullable                                      | Location of the event.                           |
+| `fee`           | Float         | Default: `0.0`                                | Entry fee for the event.                         |
+| `status`        | String(20)    | Default: `'upcoming'`                         | Status (upcoming, ongoing, completed, cancelled).|
+| `meta_data`     | JSON          | Nullable, Default: `{}`                       | Flexible data (tags, registration links, etc.).  |
+| `created_at`    | DateTime      | Default: `datetime.utcnow`                    | Timestamp of creation.                           |
 | `updated_at`    | DateTime      | Default: `datetime.utcnow`, OnUpdate: `utcnow`| Timestamp of last update.                        |
 
 ---
@@ -70,6 +103,23 @@ The backend is built with **Flask** and exposes a RESTful API.
     - `200 OK`: Returns `{ "token": "jwt_token...", "user": { ... } }`.
     - `401 Unauthorized`: Invalid credentials.
 
+#### **User Management (`/api/users`)**
+- **`GET /api/users/me`**
+  - **Description**: Get current user profile.
+  - **Headers**: `Authorization: Bearer <token>`
+  - **Response**: `200 OK` (User details).
+
+- **`PUT /api/users/me`**
+  - **Description**: Update user profile.
+  - **Headers**: `Authorization: Bearer <token>`
+  - **Request Body**: `{ "bio": "New bio", "social_media": { ... } }`
+  - **Response**: `200 OK` (Updated user details).
+
+- **`DELETE /api/users/me`**
+  - **Description**: Delete user account.
+  - **Headers**: `Authorization: Bearer <token>`
+  - **Response**: `200 OK` (Success message).
+
 ---
 
 ## 3. Frontend-Backend Flow
@@ -97,23 +147,3 @@ The backend is built with **Flask** and exposes a RESTful API.
     - Generates a **JWT Access Token**.
     - Returns token and user details.
 4.  **Completion**: Frontend stores token (implementation pending/in-progress) and redirects to Dashboard.
-
----
-
-## 4. Requirements
-
-### 4.1. Functional Requirements
-- **User Registration**: Users must be able to create an account using an institutional email.
-- **User Authentication**: Users must be able to log in securely.
-- **Role-Based Access**:
-  - **Students**: Regular access to view clubs/events (default).
-  - **Club Leaders**: Admin access to manage their clubs (mapped to `is_admin`).
-- **Profile Management**: Users have bio and social media links stored (update functionality pending).
-
-### 4.2. Non-Functional Requirements
-- **Security**: Passwords must be hashed before storage. API endpoints must be protected via JWT (for future protected routes).
-- **Scalability**: Database design supports JSON fields for flexible social media links.
-- **Cross-Origin Resource Sharing (CORS)**: Enabled to allow frontend (port 5173) to communicate with backend (port 5000).
-- **Environment**:
-  - Backend: Python/Flask
-  - Frontend: React/Vite
