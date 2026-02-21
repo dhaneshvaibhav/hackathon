@@ -40,8 +40,21 @@ const Login = () => {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
 
-            // Redirect based on previous location or role
-            const from = location.state?.from?.pathname || (data.user.is_admin ? '/admin' : '/dashboard');
+            // Redirect logic merging both requirements:
+            // 1. Redirect back to previous location if available (from ProtectedRoute)
+            // 2. Otherwise, check for admin role or missing bio (onboarding)
+            let from = location.state?.from?.pathname;
+            
+            if (!from) {
+                if (data.user.is_admin) {
+                    from = '/admin';
+                } else if (!data.user.bio) {
+                    from = '/profile?onboarding=true';
+                } else {
+                    from = '/dashboard';
+                }
+            }
+
             navigate(from, { replace: true });
         } catch (err) {
             setError(err.message);

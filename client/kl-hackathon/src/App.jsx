@@ -9,8 +9,10 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
+
 import Clubs from './pages/Clubs';
 import Events from './pages/Events';
+
 import './App.css';
 
 const PublicLayout = () => {
