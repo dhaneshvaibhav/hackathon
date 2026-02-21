@@ -12,6 +12,8 @@
   --text-main: #2D3748;
   --text-muted: #718096;
   --border-color: #E2E8F0;
+  --success: #22c55e;
+  --error: #ef4444;
 
   --font-heading: 'Playfair Display', serif;
   --font-body: 'Lato', sans-serif;

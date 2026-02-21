@@ -1,6 +1,6 @@
 from app.models.event import Event
 from app.extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 class EventService:
     @staticmethod
@@ -19,13 +19,20 @@ class EventService:
 
             # Parse start_date and end_date
             try:
-                start_date = data['start_date']
-                if isinstance(start_date, str):
-                    start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
-                
-                end_date = data['end_date']
-                if isinstance(end_date, str):
-                    end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                # Helper to parse and ensure offset-naive UTC
+                def parse_to_naive_utc(date_str):
+                    if not isinstance(date_str, str):
+                        return date_str
+                    # Parse ISO string
+                    dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                    # Convert to UTC if aware, then make naive
+                    if dt.tzinfo is not None:
+                        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+                    return dt
+
+                start_date = parse_to_naive_utc(data['start_date'])
+                end_date = parse_to_naive_utc(data['end_date'])
+
             except ValueError:
                 return None, "Invalid date format. Use ISO 8601 format."
 
