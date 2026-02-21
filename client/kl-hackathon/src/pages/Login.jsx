@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import { validateInstitutionalEmail } from '../functions/authValidation';
 import { loginUser } from '../functions/auth';
@@ -13,6 +13,7 @@ const Login = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleChange = (e) => {
         setFormData({
@@ -39,12 +40,9 @@ const Login = () => {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
 
-            // Redirect based on role
-            if (data.user.is_admin) {
-                navigate('/admin');
-            } else {
-                navigate('/dashboard');
-            }
+            // Redirect based on previous location or role
+            const from = location.state?.from?.pathname || (data.user.is_admin ? '/admin' : '/dashboard');
+            navigate(from, { replace: true });
         } catch (err) {
             setError(err.message);
         } finally {
