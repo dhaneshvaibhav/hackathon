@@ -15,6 +15,7 @@ const AdminDashboard = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEventModal, setShowEventModal] = useState(false);
     const [newClub, setNewClub] = useState({ name: '', description: '', category: '', logo_url: '' });
+    const [isOtherCategory, setIsOtherCategory] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [newEvent, setNewEvent] = useState({
@@ -92,6 +93,8 @@ const AdminDashboard = () => {
             setClubs([...clubs, club]);
             setShowCreateModal(false);
             setNewClub({ name: '', description: '', category: '', logo_url: '' });
+
+            setIsOtherCategory(false);
             setSelectedFile(null);
             setSuccessMessage('Club created successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
@@ -283,12 +286,36 @@ const AdminDashboard = () => {
                                 </div>
                                 <div style={{ marginBottom: '1rem' }}>
                                     <label style={{ display: 'block', marginBottom: '0.5rem' }}>Category</label>
-                                    <input 
-                                        type="text" 
-                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                        value={newClub.category}
-                                        onChange={(e) => setNewClub({...newClub, category: e.target.value})}
-                                    />
+                                    <select 
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', marginBottom: isOtherCategory ? '0.5rem' : '0' }}
+                                        value={isOtherCategory ? 'Other' : newClub.category}
+                                        onChange={(e) => {
+                                            if (e.target.value === 'Other') {
+                                                setIsOtherCategory(true);
+                                                setNewClub({...newClub, category: ''});
+                                            } else {
+                                                setIsOtherCategory(false);
+                                                setNewClub({...newClub, category: e.target.value});
+                                            }
+                                        }}
+                                    >
+                                        <option value="">-- Select Category --</option>
+                                        <option value="Academic">Academic</option>
+                                        <option value="Sports">Sports</option>
+                                        <option value="Arts">Arts</option>
+                                        <option value="Technology">Technology</option>
+                                        <option value="Community Service">Community Service</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    {isOtherCategory && (
+                                        <input 
+                                            type="text" 
+                                            placeholder="Enter custom category"
+                                            style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                            value={newClub.category}
+                                            onChange={(e) => setNewClub({...newClub, category: e.target.value})}
+                                        />
+                                    )}
                                 </div>
                                 <div style={{ marginBottom: '1rem' }}>
                                     <label style={{ display: 'block', marginBottom: '0.5rem' }}>Description</label>

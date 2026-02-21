@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import './Dashboard.css';
 import { getEvents } from '../functions/event';
 
 const Events = () => {
+    const { searchQuery } = useOutletContext() || { searchQuery: '' };
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -27,16 +29,23 @@ const Events = () => {
     if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading events...</div>;
     if (error) return <div style={{ padding: '2rem', textAlign: 'center', color: 'red' }}>{error}</div>;
 
+    const filteredEvents = events.filter(event => 
+        !searchQuery ||
+        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.location?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <div className="dashboard-page">
             <main className="container" style={{ padding: '3rem 2rem' }}>
                 <h1 style={{ fontSize: '2.5rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>
-                    Events
+                    {searchQuery ? `Events matching "${searchQuery}"` : 'Events'}
                 </h1>
                 <p style={{ color: 'var(--text-muted)' }}>Upcoming events will be listed here.</p>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem', marginTop: '2rem' }}>
-                    {events.map(event => (
+                    {filteredEvents.map(event => (
                         <div key={event.id} className="card" style={{ padding: '1.5rem' }}>
                             {event.poster_url && (
                                 <img 
@@ -62,7 +71,7 @@ const Events = () => {
                             </div>
                         </div>
                     ))}
-                    {events.length === 0 && (
+                    {filteredEvents.length === 0 && (
                         <p>No events found.</p>
                     )}
                 </div>
