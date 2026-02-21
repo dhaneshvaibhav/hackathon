@@ -2,33 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Compass, CalendarDays, Users, ArrowRight, ShieldAlert, LayoutDashboard, CheckCircle, XCircle } from 'lucide-react';
 import { getUserProfile } from '../functions/user';
-import { getManagedClubs, createClub, getClubRequests, handleClubRequest } from '../functions/club';
+import { getManagedClubs, createClub } from '../functions/club';
+import { createEvent, getEvents } from '../functions/event';
 import './Dashboard.css';
 
 const AdminDashboard = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [clubs, setClubs] = useState([]);
-    const [requests, setRequests] = useState({}); // clubId -> requests array
+    const [events, setEvents] = useState([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showEventModal, setShowEventModal] = useState(false);
     const [newClub, setNewClub] = useState({ name: '', description: '', category: '', logo_url: '' });
+    const [newEvent, setNewEvent] = useState({
+        title: '',
+        description: '',
+        club_id: '',
+        poster_url: '',
+        start_date: '',
+        end_date: '',
+        location: '',
+        fee: 0,
+        status: 'upcoming'
+    });
     const [createError, setCreateError] = useState('');
+    const [eventError, setEventError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     
     const navigate = useNavigate();
-
-    const fetchRequestsForClubs = async (clubsData, token) => {
-        const requestsMap = {};
-        for (const club of clubsData) {
-            try {
-                const reqs = await getClubRequests(token, club.id);
-                requestsMap[club.id] = reqs.filter(r => r.status === 'pending');
-            } catch (err) {
-                console.error(`Failed to fetch requests for club ${club.id}`, err);
-            }
-        }
-        setRequests(requestsMap);
-    };
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -49,9 +50,14 @@ const AdminDashboard = () => {
                 // Fetch managed clubs
                 const clubsData = await getManagedClubs(token);
                 setClubs(clubsData);
-                
-                // Fetch requests for these clubs
-                await fetchRequestsForClubs(clubsData, token);
+
+                // Fetch all events and filter for managed clubs
+                const allEvents = await getEvents();
+                // Get IDs of managed clubs
+                const managedClubIds = clubsData.map(club => club.id);
+                // Filter events that belong to one of the managed clubs
+                const myEvents = allEvents.filter(event => managedClubIds.includes(event.club_id));
+                setEvents(myEvents);
 
             } catch (err) {
                 console.error('Failed to load user or clubs', err);
@@ -79,26 +85,45 @@ const AdminDashboard = () => {
         }
     };
 
-    const onHandleRequest = async (requestId, clubId, status, adminResponse) => {
+    const handleCreateEvent = async (e) => {
+        e.preventDefault();
+        setEventError('');
         const token = localStorage.getItem('token');
+        
+        if (!newEvent.club_id) {
+            setEventError('Please select a club');
+            return;
+        }
+
         try {
-            await handleClubRequest(token, requestId, status, adminResponse);
-            // Update local state
-            setRequests(prev => ({
-                ...prev,
-                [clubId]: prev[clubId].filter(r => r.id !== requestId)
-            }));
-            setSuccessMessage(`Request ${status} successfully!`);
+            const eventData = {
+                ...newEvent,
+                fee: parseFloat(newEvent.fee) || 0,
+                start_date: new Date(newEvent.start_date).toISOString(),
+                end_date: new Date(newEvent.end_date).toISOString()
+            };
+            
+            await createEvent(token, eventData);
+            setShowEventModal(false);
+            setNewEvent({
+                title: '',
+                description: '',
+                club_id: '',
+                poster_url: '',
+                start_date: '',
+                end_date: '',
+                location: '',
+                fee: 0,
+                status: 'upcoming'
+            });
+            setSuccessMessage('Event created successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
-            console.error('Failed to handle request', err);
-            alert('Failed to update request');
+            setEventError(err.message);
         }
     };
 
     if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading admin dashboard...</div>;
-
-    const totalRequests = Object.values(requests).reduce((acc, curr) => acc + curr.length, 0);
 
     return (
         <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh' }}>
@@ -129,15 +154,7 @@ const AdminDashboard = () => {
                         </div>
                     </div>
 
-                    <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ backgroundColor: '#fce7f3', color: '#db2777', padding: '1rem', borderRadius: '50%' }}>
-                            <ShieldAlert size={24} />
-                        </div>
-                        <div>
-                            <h3 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>{totalRequests}</h3>
-                            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Pending Requests</p>
-                        </div>
-                    </div>
+
 
                     <div style={{ backgroundColor: 'var(--accent)', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'white', textDecoration: 'none' }}>
                         <Link to="/profile" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', color: 'white', textDecoration: 'none' }}>
@@ -176,52 +193,54 @@ const AdminDashboard = () => {
                         )}
                     </section>
 
-                    {/* Pending Requests */}
+
+                    
+                    {/* Event Management */}
                     <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                         <h3 style={{ fontSize: '1.25rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-                            Pending Join Requests
-                        </h3>
-                        
-                        {totalRequests === 0 ? (
-                            <p>No pending requests.</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #eee', paddingBottom: '1rem' }}>
+                            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>My Events</h3>
+                            <button className="btn btn-primary" onClick={() => setShowEventModal(true)}>
+                                + Create Event
+                            </button>
+                        </div>
+                        {events.length === 0 ? (
+                            <p style={{ color: '#666' }}>
+                                You haven't created any events yet.
+                            </p>
                         ) : (
-                            <div>
-                                {Object.keys(requests).map(clubId => (
-                                    requests[clubId].map(req => (
-                                        <div key={req.id} style={{ padding: '1rem', border: '1px solid #eee', borderRadius: '8px', marginBottom: '1rem' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                                <strong>{req.user_name}</strong>
-                                                <span style={{ fontSize: '0.8rem', color: '#666' }}>wants to join {req.club_name}</span>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' }}>
+                                {events.map(event => (
+                                    <div key={event.id} style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
+                                        {event.poster_url ? (
+                                            <img src={event.poster_url} alt={event.title} style={{ width: '100%', height: '140px', objectFit: 'cover' }} />
+                                        ) : (
+                                            <div style={{ width: '100%', height: '140px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                                                <CalendarDays size={40} />
                                             </div>
-                                            {req.message && (
-                                                <div style={{ fontSize: '0.9rem', fontStyle: 'italic', color: '#555', marginBottom: '1rem', backgroundColor: '#f9f9f9', padding: '0.5rem', borderRadius: '4px' }}>
-                                                    "{req.message}"
-                                                </div>
-                                            )}
-                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                <button 
-                                                    className="btn" 
-                                                    style={{ backgroundColor: '#16a34a', color: 'white', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
-                                                    onClick={() => {
-                                                        const msg = prompt("Message for the user (optional):", "Welcome to the club!");
-                                                        if (msg !== null) onHandleRequest(req.id, parseInt(clubId), 'accepted', msg);
-                                                    }}
-                                                >
-                                                    Accept
-                                                </button>
-                                                <button 
-                                                    className="btn" 
-                                                    style={{ backgroundColor: '#dc2626', color: 'white', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
-                                                    onClick={() => {
-                                                        const msg = prompt("Reason for rejection (optional):", "Sorry, we are not accepting new members right now.");
-                                                        if (msg !== null) onHandleRequest(req.id, parseInt(clubId), 'rejected', msg);
-                                                    }}
-                                                >
-                                                    Reject
-                                                </button>
+                                        )}
+                                        <div style={{ padding: '1rem' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
+                                                <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--primary)' }}>{event.title}</h4>
+                                                <span style={{ 
+                                                    fontSize: '0.75rem', 
+                                                    padding: '0.25rem 0.5rem', 
+                                                    borderRadius: '999px',
+                                                    backgroundColor: event.status === 'upcoming' ? '#dbeafe' : event.status === 'ongoing' ? '#dcfce7' : '#f1f5f9',
+                                                    color: event.status === 'upcoming' ? '#1e40af' : event.status === 'ongoing' ? '#166534' : '#64748b',
+                                                    textTransform: 'capitalize'
+                                                }}>
+                                                    {event.status}
+                                                </span>
                                             </div>
+                                            <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                <CalendarDays size={14} />
+                                                {new Date(event.start_date).toLocaleDateString()}
+                                            </p>
+                                            <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0 }}>
+                                                {clubs.find(c => c.id === event.club_id)?.name || 'Unknown Club'}
+                                            </p>
                                         </div>
-                                    ))
+                                    </div>
                                 ))}
                             </div>
                         )}
@@ -230,8 +249,8 @@ const AdminDashboard = () => {
 
                 {/* Create Club Modal */}
                 {showCreateModal && (
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-                        <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '500px' }}>
+                    <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                        <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
                             <h2 style={{ marginBottom: '1.5rem' }}>Create New Club</h2>
                             {createError && <div style={{ color: 'red', marginBottom: '1rem' }}>{createError}</div>}
                             <form onSubmit={handleCreateClub}>
@@ -263,16 +282,142 @@ const AdminDashboard = () => {
                                         onChange={(e) => setNewClub({...newClub, description: e.target.value})}
                                     />
                                 </div>
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Logo URL</label>
+                                    <input 
+                                        type="text" 
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        value={newClub.logo_url}
+                                        onChange={(e) => setNewClub({...newClub, logo_url: e.target.value})}
+                                    />
+                                </div>
                                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                                     <button 
                                         type="button" 
                                         className="btn btn-outline"
+                                        style={{ padding: '0.5rem 1rem', border: '1px solid #ccc', borderRadius: '4px', background: 'transparent' }}
                                         onClick={() => setShowCreateModal(false)}
                                     >
                                         Cancel
                                     </button>
                                     <button type="submit" className="btn btn-primary">
                                         Create Club
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Create Event Modal */}
+                {showEventModal && (
+                    <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                        <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
+                            <h2 style={{ marginBottom: '1.5rem' }}>Create New Event</h2>
+                            {eventError && <div style={{ color: 'red', marginBottom: '1rem' }}>{eventError}</div>}
+                            <form onSubmit={handleCreateEvent}>
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Event Title</label>
+                                    <input 
+                                        type="text" 
+                                        required 
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        value={newEvent.title}
+                                        onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                                    />
+                                </div>
+                                
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Select Club</label>
+                                    <select
+                                        required
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        value={newEvent.club_id}
+                                        onChange={(e) => setNewEvent({...newEvent, club_id: e.target.value})}
+                                    >
+                                        <option value="">-- Select a Club --</option>
+                                        {clubs.map(club => (
+                                            <option key={club.id} value={club.id}>{club.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Start Date</label>
+                                        <input 
+                                            type="datetime-local" 
+                                            required 
+                                            style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                            value={newEvent.start_date}
+                                            onChange={(e) => setNewEvent({...newEvent, start_date: e.target.value})}
+                                        />
+                                    </div>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>End Date</label>
+                                        <input 
+                                            type="datetime-local" 
+                                            required 
+                                            style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                            value={newEvent.end_date}
+                                            onChange={(e) => setNewEvent({...newEvent, end_date: e.target.value})}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Location</label>
+                                    <input 
+                                        type="text" 
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        value={newEvent.location}
+                                        onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Fee (RM)</label>
+                                    <input 
+                                        type="number" 
+                                        min="0"
+                                        step="0.01"
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        value={newEvent.fee}
+                                        onChange={(e) => setNewEvent({...newEvent, fee: e.target.value})}
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Description</label>
+                                    <textarea 
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        rows="3"
+                                        value={newEvent.description}
+                                        onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Poster URL</label>
+                                    <input 
+                                        type="text" 
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        value={newEvent.poster_url}
+                                        onChange={(e) => setNewEvent({...newEvent, poster_url: e.target.value})}
+                                    />
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-outline"
+                                        style={{ padding: '0.5rem 1rem', border: '1px solid #ccc', borderRadius: '4px', background: 'transparent' }}
+                                        onClick={() => setShowEventModal(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="btn btn-primary">
+                                        Create Event
                                     </button>
                                 </div>
                             </form>

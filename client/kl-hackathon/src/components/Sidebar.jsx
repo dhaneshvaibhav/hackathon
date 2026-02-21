@@ -1,16 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
     Home,
     Compass,
     Calendar,
     UserPlus,
+    LayoutDashboard
 } from 'lucide-react';
 import './Sidebar.css';
 
 const Sidebar = ({ isOpen, onClose }) => {
-    // For demonstration, let's determine if a user is logged in based on localStorage
-    const token = localStorage.getItem('token');
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                setIsAdmin(user.is_admin);
+            } catch (e) {
+                console.error("Failed to parse user from local storage", e);
+            }
+        }
+    }, []);
+
+    const dashboardLink = isAdmin ? '/admin' : '/dashboard';
 
     return (
         <>
@@ -22,9 +36,9 @@ const Sidebar = ({ isOpen, onClose }) => {
                 <nav className="sidebar-nav">
                     <ul className="nav-list">
                         <li>
-                            <NavLink to="/dashboard" onClick={onClose} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                                <Home size={20} />
-                                <span>Home</span>
+                            <NavLink to={dashboardLink} onClick={onClose} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                {isAdmin ? <LayoutDashboard size={20} /> : <Home size={20} />}
+                                <span>{isAdmin ? 'Admin Dashboard' : 'Home'}</span>
                             </NavLink>
                         </li>
                         <li>
