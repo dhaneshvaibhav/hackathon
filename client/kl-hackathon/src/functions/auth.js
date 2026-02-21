@@ -1,4 +1,6 @@
-const API_BASE_URL = 'http://localhost:5000/api/auth';
+import { API_BASE_URL as BASE_URL } from '../config';
+
+const API_BASE_URL = `${BASE_URL}/auth`;
 
 /**
  * Login user

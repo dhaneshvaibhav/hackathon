@@ -27,6 +27,7 @@ def create_app(config_name='default'):
     from app.routes.club import club_bp
     from app.routes.event import event_bp
     from app.routes.announcement import announcement_bp
+    from app.routes.upload import upload_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
@@ -34,6 +35,7 @@ def create_app(config_name='default'):
     app.register_blueprint(club_bp, url_prefix='/api/clubs')
     app.register_blueprint(event_bp, url_prefix='/api/events')
     app.register_blueprint(announcement_bp, url_prefix='/api/announcements')
+    app.register_blueprint(upload_bp, url_prefix='/api/upload')
 
     # Create tables for development
     with app.app_context():

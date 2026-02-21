@@ -14,6 +14,11 @@ class Config:
         "pool_recycle": 300,
     }
 
+    # Cloudinary Config
+    CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
+    CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
+    CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
+
 class DevelopmentConfig(Config):
     """Development configuration."""
     DEBUG = True

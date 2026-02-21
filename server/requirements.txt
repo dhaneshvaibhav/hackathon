@@ -1,9 +1,8 @@
 flask
-python-dotenv
-flask-cors
 flask-sqlalchemy
-psycopg2-binary
+flask-cors
 flask-jwt-extended
-werkzeug
 flask-migrate
- 
+psycopg2-binary
+python-dotenv
+cloudinary

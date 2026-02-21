@@ -11,8 +11,9 @@ const Clubs = () => {
 
     useEffect(() => {
         const fetchClubs = async () => {
+            const token = localStorage.getItem('token');
             try {
-                const data = await getClubs();
+                const data = await getClubs(token);
                 setClubs(data);
             } catch (err) {
                 setError('Failed to fetch clubs');

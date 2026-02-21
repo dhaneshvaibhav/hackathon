@@ -28,12 +28,12 @@ const Dashboard = () => {
 
             try {
                 const userData = await getUserProfile(token);
-                setUser(userData);
+                setUser(userData);           
+               const [clubsData, requestsData] = await Promise.all([
+                   getEvents(),
+                    getClubs(token),
+                    getMyRequests(token)
 
-                const [clubsData, requestsData, eventsData] = await Promise.all([
-                    getClubs(),
-                    getMyRequests(token),
-                    getEvents()
                 ]);
 
                 setClubs(clubsData);
