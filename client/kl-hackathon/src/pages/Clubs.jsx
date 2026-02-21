@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext, useNavigate, Link } from 'react-router-dom';
-import { Users, CheckCircle, Clock, PlusCircle, ArrowRight, Edit } from 'lucide-react';
+import { Users, CheckCircle, Clock, PlusCircle, ArrowRight, Edit, X, Upload } from 'lucide-react';
 import './Dashboard.css';
-import { getClubs, getMyRequests, requestJoinClub } from '../functions/club';
+import { getClubs, getMyRequests, requestJoinClub, createClub } from '../functions/club';
 import { getUserProfile } from '../functions/user';
+import { uploadMedia } from '../functions/upload';
 
 const Clubs = () => {
     const { searchQuery } = useOutletContext() || { searchQuery: '' };
@@ -15,6 +16,71 @@ const Clubs = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+
+    // Create Club State
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [creating, setCreating] = useState(false);
+    const [newClubData, setNewClubData] = useState({
+        name: '',
+        description: '',
+        category: '',
+        logo_url: '',
+        roles: ['Member']
+    });
+    const [uploading, setUploading] = useState(false);
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploading(true);
+        const token = localStorage.getItem('token');
+        try {
+            const data = await uploadMedia(token, file);
+            setNewClubData(prev => ({
+                ...prev,
+                logo_url: data.url
+            }));
+        } catch (err) {
+            setError('Failed to upload image');
+            console.error(err);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleCreateInputChange = (e) => {
+        const { name, value } = e.target;
+        setNewClubData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleCreateClub = async (e) => {
+        e.preventDefault();
+        setCreating(true);
+        setError('');
+        
+        const token = localStorage.getItem('token');
+        try {
+            await createClub(token, newClubData);
+            setSuccessMessage('Club created successfully!');
+            setShowCreateModal(false);
+            setNewClubData({ name: '', description: '', category: '', logo_url: '', roles: ['Member'] });
+            
+            // Refresh clubs list
+            const clubsData = await getClubs(token);
+            setClubs(clubsData);
+            
+            // Clear success message after 3 seconds
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            setError(err.message || 'Failed to create club');
+        } finally {
+            setCreating(false);
+        }
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -90,6 +156,13 @@ const Clubs = () => {
                         </h1>
                         <p style={{ color: 'var(--text-muted)' }}>Find and join communities that match your interests.</p>
                     </div>
+                    <button 
+                        onClick={() => setShowCreateModal(true)}
+                        className="btn-primary"
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    >
+                        <PlusCircle size={20} /> Create Club
+                    </button>
                 </div>
 
                 {successMessage && (
@@ -218,6 +291,124 @@ const Clubs = () => {
                         </div>
                     )}
                 </div>
+
+                {/* Create Club Modal */}
+                {showCreateModal && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 1000
+                    }}>
+                        <div style={{
+                            backgroundColor: 'white',
+                            borderRadius: '12px',
+                            padding: '2rem',
+                            width: '100%',
+                            maxWidth: '500px',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Create New Club</h2>
+                                <button 
+                                    onClick={() => setShowCreateModal(false)}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleCreateClub}>
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Club Logo</label>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        {newClubData.logo_url && (
+                                            <img 
+                                                src={newClubData.logo_url} 
+                                                alt="Preview" 
+                                                style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }}
+                                            />
+                                        )}
+                                        <label className="btn-secondary" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <Upload size={16} />
+                                            {uploading ? 'Uploading...' : 'Upload Logo'}
+                                            <input 
+                                                type="file" 
+                                                accept="image/*" 
+                                                onChange={handleFileChange}
+                                                style={{ display: 'none' }}
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Club Name</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={newClubData.name}
+                                        onChange={handleCreateInputChange}
+                                        required
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '6px' }}
+                                        placeholder="e.g. Coding Club"
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Category</label>
+                                    <input
+                                        type="text"
+                                        name="category"
+                                        value={newClubData.category}
+                                        onChange={handleCreateInputChange}
+                                        required
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '6px' }}
+                                        placeholder="e.g. Technology"
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Description</label>
+                                    <textarea
+                                        name="description"
+                                        value={newClubData.description}
+                                        onChange={handleCreateInputChange}
+                                        required
+                                        rows="4"
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '6px', resize: 'vertical' }}
+                                        placeholder="Describe your club..."
+                                    />
+                                </div>
+
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCreateModal(false)}
+                                        className="btn-ghost"
+                                        style={{ padding: '0.75rem 1.5rem' }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="btn-primary"
+                                        disabled={creating || uploading}
+                                        style={{ padding: '0.75rem 1.5rem', opacity: (creating || uploading) ? 0.7 : 1 }}
+                                    >
+                                        {creating ? 'Creating...' : (uploading ? 'Uploading...' : 'Create Club')}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );
