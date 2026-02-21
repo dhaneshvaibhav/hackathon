@@ -206,8 +206,8 @@ const Dashboard = () => {
     }
 
     return (
-        <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh' }}>
-            <main className="container" style={{ padding: '3rem 2rem', maxWidth: '100%' }}>
+        <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh', overflowX: 'hidden' }}>
+            <main className="container" style={{ padding: '3rem 2rem', maxWidth: '100%', overflowX: 'hidden' }}>
                 <div style={{ marginBottom: '3rem', width: '100%' }}>
                     {/* Events Carousel */}
                     <div style={{ marginBottom: '2.5rem' }}>
@@ -223,7 +223,9 @@ const Dashboard = () => {
                                 overflowX: 'auto', 
                                 paddingBottom: '1rem',
                                 scrollSnapType: 'x mandatory',
-                                WebkitOverflowScrolling: 'touch'
+                                WebkitOverflowScrolling: 'touch',
+                                width: '100%',
+                                scrollbarWidth: 'thin'
                             }}>
                                 {events.map(event => (
                                     <div key={event.id} style={{ 
@@ -240,13 +242,13 @@ const Dashboard = () => {
                                     }}>
                                         <div style={{ 
                                             height: '140px', 
-                                            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                            background: event.poster_url ? `url(${event.poster_url}) center/cover no-repeat` : 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             color: 'white'
                                         }}>
-                                            <CalendarDays size={48} opacity={0.5} />
+                                            {!event.poster_url && <CalendarDays size={48} opacity={0.5} />}
                                         </div>
                                         <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
                                             <div style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: '600', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
