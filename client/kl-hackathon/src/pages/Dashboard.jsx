@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Compass, CalendarDays, Users, ArrowRight } from 'lucide-react';
 import { getUserProfile } from '../functions/user';
+import './Dashboard.css';
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
@@ -44,7 +45,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Dashboard Stats / Quick Links Row */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+                <div className="dashboard-stats-grid">
                     <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <div style={{ backgroundColor: '#e0e7ff', color: '#4f46e5', padding: '1rem', borderRadius: '50%' }}>
                             <Users size={24} />
@@ -77,7 +78,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Main Content Areas */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div className="dashboard-content-grid">
 
                     {/* Activity or Updates Component */}
                     <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
