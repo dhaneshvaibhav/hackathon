@@ -15,6 +15,7 @@ from langgraph.checkpoint.memory import MemorySaver
 
 from app.services.club_service import ClubService
 from app.services.event_service import EventService
+from app.services.announcement_service import AnnouncementService
 from app.models.oauth import OAuth
 from app.models.user import User
 
@@ -102,7 +103,40 @@ class AIService:
             clubs = ClubService.get_all_clubs()
             return [c.to_dict() for c in clubs]
 
-        return [create_club, create_event, get_clubs]
+        @tool
+        def get_events():
+            """Get a list of all events."""
+            events = EventService.get_all_events()
+            return [e.to_dict() for e in events]
+
+        @tool
+        def join_club(club_id: int, message: str, role: str):
+            """
+            Request to join a club.
+            
+            IMPORTANT:
+            - BEFORE calling this tool, you MUST use `get_clubs` to list available clubs and their roles to the user.
+            - Ask the user to select a club name and a role.
+            - Map the user's selected club name to `club_id` from the `get_clubs` data.
+            - Ensure `role` is one of the valid roles for that club.
+            
+            Args:
+                club_id: ID of the club to join
+                message: Message to the club owner explaining why you want to join
+                role: Role you are applying for (must be one of the club's available roles)
+            """
+            result, error = ClubService.request_to_join(club_id, user_id, message, role)
+            if error:
+                return f"Error: {error}"
+            return f"Successfully requested to join club. Request status: {result.status}"
+
+        @tool
+        def get_announcements():
+            """Get a list of all announcements."""
+            announcements = AnnouncementService.get_all_announcements()
+            return [a.to_dict() for a in announcements]
+
+        return [create_club, create_event, get_clubs, get_events, join_club, get_announcements]
 
     @staticmethod
     def summarize_text(text: str, max_words: int = 300) -> str:
@@ -297,7 +331,21 @@ class AIService:
             # Define graph nodes
             def chatbot(state: State):
                 logger.info(f"Processing messages count: {len(state['messages'])}")
-                return {"messages": [model_with_tools.invoke(state["messages"])]}
+                
+                # System instructions to enforce behavior
+                system_text = """You are a helpful AI assistant for a Hackathon Club Management platform.
+                
+                PROTOCOL FOR JOINING A CLUB:
+                1. If a user wants to join a club, FIRST call `get_clubs` to retrieve available clubs.
+                2. Present the names of the clubs to the user.
+                3. Ask the user to select a club.
+                4. Once selected, look at the `roles` list for that club from the `get_clubs` data.
+                5. Present the available roles to the user and ask them to choose one.
+                6. ONLY then call `join_club` with the mapped `club_id` and the selected `role`.
+                """
+                
+                messages = [SystemMessage(content=system_text)] + state["messages"]
+                return {"messages": [model_with_tools.invoke(messages)]}
 
             # Build graph
             graph_builder = StateGraph(State)
