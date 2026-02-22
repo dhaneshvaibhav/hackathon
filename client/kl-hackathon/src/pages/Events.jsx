@@ -126,7 +126,7 @@ const Events = () => {
                                             fontWeight: 'bold',
                                             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                                         }}>
-                                            {isFree ? 'Free' : `RM ${event.fee}`}
+                                            {isFree ? 'Free' : `Rs ${event.fee}`}
                                         </div>
                                     </div>
                                 ) : (
@@ -151,7 +151,7 @@ const Events = () => {
                                             fontWeight: 'bold',
                                             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                                         }}>
-                                            {isFree ? 'Free' : `RM ${event.fee}`}
+                                            {isFree ? 'Free' : `Rs ${event.fee}`}
                                         </div>
                                     </div>
                                 )}

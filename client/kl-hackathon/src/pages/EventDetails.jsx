@@ -144,7 +144,7 @@ const EventDetails = () => {
                                 fontSize: '1.2rem',
                                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                             }}>
-                                {isFree ? 'Free' : `RM ${event.fee}`}
+                                {isFree ? 'Free' : `Rs ${event.fee}`}
                             </div>
                         </div>
 
