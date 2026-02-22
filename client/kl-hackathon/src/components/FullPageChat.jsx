@@ -100,7 +100,7 @@ const FullPageChat = () => {
                         <div key={index} className={`message-wrapper ${msg.role}`}>
                             <div className="message-content-container">
                                 <div className="avatar">
-                                    {msg.role === 'ai' ? <Bot size={24} color="white" /> : <User size={24} color="white" />}
+                                    {msg.role === 'ai' ? <Bot size={24} /> : <User size={24} />}
                                 </div>
                                 <div className="message-text">
                                     {typeof msg.content === 'string' 
@@ -113,7 +113,7 @@ const FullPageChat = () => {
                     {isLoading && (
                         <div className="message-wrapper ai">
                             <div className="message-content-container">
-                                <div className="avatar"><Bot size={24} color="white" /></div>
+                                <div className="avatar"><Bot size={24} /></div>
                                 <div className="message-text">
                                     <div className="typing-indicator">
                                         <span></span><span></span><span></span>

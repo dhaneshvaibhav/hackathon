@@ -147,21 +147,15 @@ const DashboardLayout = () => {
             <div className="main-wrapper">
                 <header 
                     className="dashboard-header" 
-                    style={isAIMode ? { 
-                        backgroundColor: '#343541', 
-                        borderBottom: '1px solid rgba(255,255,255,0.1)',
-                        color: '#ECECEC'
-                    } : {}}
                 >
                     <div className="header-left">
                         <button 
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
                             className="menu-btn"
-                            style={isAIMode ? { color: '#ECECEC' } : {}}
                         >
                             <Menu size={24} />
                         </button>
-                        <h2 style={isAIMode ? { color: '#ECECEC' } : {}}>{isAIMode ? 'Club Hub AI' : 'Club Hub'}</h2>
+                        <h2>{isAIMode ? 'Club Hub AI' : 'Club Hub'}</h2>
                     </div>
                     
                     {!isAIMode && (
@@ -181,7 +175,6 @@ const DashboardLayout = () => {
                     <div className="header-right" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <button 
                             className="notification-btn" 
-                            style={isAIMode ? { color: '#ECECEC' } : {}}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setShowNotifications(!showNotifications);
