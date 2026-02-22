@@ -183,6 +183,7 @@ const Profile = () => {
         
         const isGithub = field === 'github';
         const isLinkedin = field === 'linkedin';
+        const isComingSoon = field === 'twitter' || field === 'instagram';
         
         let isConnected = false;
         let accountInfo = null;
@@ -212,7 +213,8 @@ const Profile = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 transition: 'box-shadow 0.2s ease-in-out',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                opacity: isComingSoon ? 0.7 : 1
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                     <div style={{ flex: 1, marginRight: '1rem', display: 'flex', alignItems: 'center' }}>
@@ -224,7 +226,19 @@ const Profile = () => {
                          </div>
                     </div>
                     
-                    {isGithub || isLinkedin ? (
+                    {isComingSoon ? (
+                        <div style={{ 
+                            padding: '0.5rem 1rem', 
+                            background: '#f1f5f9', 
+                            color: '#64748b', 
+                            borderRadius: '6px', 
+                            fontSize: '0.875rem', 
+                            fontWeight: '600',
+                            border: '1px solid #e2e8f0'
+                        }}>
+                            Coming Soon
+                        </div>
+                    ) : (isGithub || isLinkedin ? (
                         <button
                             onClick={isConnected ? handleDisconnect : handleConnect}
                             style={{ 
@@ -260,7 +274,7 @@ const Profile = () => {
                         >
                             {value ? 'Edit' : 'Connect'}
                         </button>
-                    )}
+                    ))}
                 </div>
                 
                 {isConnected && accountInfo && accountInfo.meta_data && (
@@ -453,8 +467,8 @@ const Profile = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             {renderEditableField('github', <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}><Github size={20} /> GitHub</span>, user?.social_media?.github)}
                             {renderEditableField('linkedin', <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}><Linkedin size={20} /> LinkedIn</span>, user?.social_media?.linkedin)}
-                            {renderEditableField('twitter', <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}><Twitter size={20} /> Twitter / X</span>, user?.social_media?.twitter)}
-                            {renderEditableField('instagram', <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}><Instagram size={20} /> Instagram</span>, user?.social_media?.instagram)}
+                            {renderEditableField('twitter', <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', opacity: 0.5 }}><Twitter size={20} /> Twitter / X</span>, user?.social_media?.twitter)}
+                            {renderEditableField('instagram', <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', opacity: 0.5 }}><Instagram size={20} /> Instagram</span>, user?.social_media?.instagram)}
                         </div>
                     </section>
                 )}
