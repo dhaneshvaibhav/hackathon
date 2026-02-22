@@ -172,7 +172,7 @@ const ClubDetails = () => {
                     )}
                     
                     <div style={{ padding: '2rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                        <div className="details-header">
                             <div>
                                 {club.category && (
                                     <span className="badge" style={{ 
@@ -217,7 +217,7 @@ const ClubDetails = () => {
                                     </button>
                                 )}
                                 {status === 'none' && showJoinForm && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: '300px', backgroundColor: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                    <div className="join-form-container">
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                                             <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--text-main)', margin: 0 }}>Join this Club</h3>
                                             <button 
@@ -315,7 +315,7 @@ const ClubDetails = () => {
                                     </button>
                                 </div>
                                 
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                                <div className="responsive-grid">
                                     {club.events.map(event => (
                                         <div key={event.id} style={{ 
                                             border: '1px solid #e2e8f0', 

@@ -204,21 +204,10 @@ const Profile = () => {
         const handleDisconnect = isGithub ? handleGithubDisconnect : isLinkedin ? handleLinkedinDisconnect : undefined;
 
         return (
-            <div style={{ 
-                marginBottom: '1rem', 
-                padding: '1.5rem', 
-                backgroundColor: 'white', 
-                borderRadius: '12px', 
-                border: '1px solid #E2E8F0',
-                display: 'flex',
-                flexDirection: 'column',
-                transition: 'box-shadow 0.2s ease-in-out',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                opacity: isComingSoon ? 0.7 : 1
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                    <div style={{ flex: 1, marginRight: '1rem', display: 'flex', alignItems: 'center' }}>
-                         <div style={{ width: '180px', color: 'var(--text-main)', fontWeight: 600, fontSize: '1rem' }}>
+            <div className="profile-card" style={{ opacity: isComingSoon ? 0.7 : 1 }}>
+                <div className="profile-card-header">
+                    <div className="profile-card-info">
+                         <div className="profile-card-label">
                             {label}
                          </div>
                          <div style={{ flex: 1, color: isConnected ? 'var(--text-muted)' : '#94a3b8', fontSize: '0.95rem' }}>
@@ -361,7 +350,7 @@ const Profile = () => {
                                 </div>
                                 
                                 <h3 style={{ fontSize: '1.1rem', marginTop: '1rem', marginBottom: '1rem', color: 'var(--primary)' }}>Social Links</h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="form-grid">
                                     <input
                                         type="url"
                                         name="github"

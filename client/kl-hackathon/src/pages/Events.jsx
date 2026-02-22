@@ -81,8 +81,8 @@ const Events = () => {
 
     return (
         <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh' }}>
-            <main className="container" style={{ padding: '3rem 2rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <main className="container">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                     <div>
                         <h1 style={{ fontSize: '2.5rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>
                             {searchQuery ? `Events matching "${searchQuery}"` : 'Upcoming Events'}
@@ -91,7 +91,7 @@ const Events = () => {
                     </div>
                 </div>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
+                <div className="responsive-grid">
                     {filteredEvents.map(event => {
                         const isFree = !event.fee || parseFloat(event.fee) === 0;
                         const eventDate = new Date(event.start_date);

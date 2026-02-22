@@ -12,6 +12,12 @@
     transition: margin-left 0.3s ease;
 }
 
+@media (max-width: 768px) {
+    .main-wrapper {
+        margin-left: 0;
+    }
+}
+
 .dashboard-header {
     background-color: white;
     height: 64px;
@@ -41,6 +47,32 @@
 
 .menu-btn:hover {
     background-color: var(--bg-secondary);
+}
+
+@media (max-width: 768px) {
+    .menu-btn {
+        display: block;
+    }
+    
+    .dashboard-header {
+        padding: 0 1rem;
+    }
+    
+    .header-center {
+        display: none; /* Hide search on mobile header to save space, or move it */
+    }
+
+    .notification-dropdown {
+        width: 300px;
+        right: -10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .notification-dropdown {
+        width: 280px;
+        right: -50px;
+    }
 }
 
 .dashboard-header h2 {

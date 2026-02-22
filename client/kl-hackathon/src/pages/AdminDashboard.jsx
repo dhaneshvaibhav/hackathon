@@ -230,7 +230,7 @@ const AdminDashboard = () => {
                                 You haven't created any events yet.
                             </p>
                         ) : (
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' }}>
+                            <div className="responsive-grid">
                                 {events.map(event => (
                                     <div key={event.id} style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
                                         {event.poster_url ? (
@@ -282,7 +282,7 @@ const AdminDashboard = () => {
                 {/* Create Club Modal */}
                 {showCreateClubModal && (
                     <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-                        <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
+                        <div className="modal-content">
                             <h2 style={{ marginBottom: '1.5rem' }}>Create New Club</h2>
                             {createClubError && <div style={{ color: 'red', marginBottom: '1rem' }}>{createClubError}</div>}
                             <form onSubmit={handleCreateClub}>
@@ -343,7 +343,7 @@ const AdminDashboard = () => {
                 {/* Announcement Modal */}
                 {showAnnouncementModal && selectedEvent && (
                     <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-                        <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '500px' }}>
+                        <div className="modal-content">
                             <h2 style={{ marginBottom: '1rem' }}>Make Announcement for {selectedEvent.title}</h2>
                             {announcementError && <div style={{ color: 'red', marginBottom: '1rem' }}>{announcementError}</div>}
                             <form onSubmit={handleCreateAnnouncement}>
