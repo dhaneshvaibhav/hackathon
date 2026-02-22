@@ -148,8 +148,8 @@ const Clubs = () => {
 
     return (
         <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh' }}>
-            <main className="container" style={{ padding: '3rem 2rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <main className="container">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                     <div>
                         <h1 style={{ fontSize: '2.5rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>
                             {searchQuery ? `Clubs matching "${searchQuery}"` : 'Discover Clubs'}
@@ -195,7 +195,7 @@ const Clubs = () => {
                     </div>
                 )}
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
+                <div className="responsive-grid">
                     {filteredClubs.map(club => {
                         const status = getClubStatus(club);
                         
@@ -308,14 +308,7 @@ const Clubs = () => {
                         alignItems: 'center',
                         zIndex: 1000
                     }}>
-                        <div style={{
-                            backgroundColor: 'white',
-                            borderRadius: '12px',
-                            padding: '2rem',
-                            width: '100%',
-                            maxWidth: '500px',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                        }}>
+                        <div className="modal-content">
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                                 <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Create New Club</h2>
                                 <button 

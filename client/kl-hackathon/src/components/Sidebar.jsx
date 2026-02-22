@@ -38,72 +38,10 @@ const Sidebar = ({ isOpen, onClose, user, onBecomeCreator, mode = 'standard', on
         <>
             <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
                 <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2>{mode === 'ai' ? 'AI Chat' : 'Club Hub'}</h2>
-                    {onToggleAI && (
-                        <button 
-                            onClick={onToggleAI}
-                            style={{
-                                background: 'transparent',
-                                border: '1px solid rgba(255, 255, 255, 0.2)',
-                                borderRadius: '8px',
-                                padding: '6px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'var(--accent)',
-                                transition: 'all 0.2s'
-                            }}
-                            title={mode === 'ai' ? "Switch to Standard View" : "Switch to AI Chat"}
-                        >
-                            {mode === 'ai' ? <Layout size={20} /> : <MessageSquare size={20} />}
-                        </button>
-                    )}
+                    <h2>Club Hub</h2>
                 </div>
 
                 <nav className="sidebar-nav">
-                    {mode === 'ai' ? (
-                        <ul className="nav-list">
-                             <li>
-                                <button 
-                                    onClick={() => {
-                                        onClose();
-                                        if (onNewChat) onNewChat();
-                                    }} 
-                                    className="nav-link" 
-                                    style={{ 
-                                        background: 'transparent', 
-                                        border: 'none', 
-                                        width: '100%', 
-                                        textAlign: 'left', 
-                                        cursor: 'pointer',
-                                        fontSize: 'inherit',
-                                        fontFamily: 'inherit',
-                                        color: '#646cff'
-                                    }}
-                                >
-                                    <PlusCircle size={20} />
-                                    <span>New Chat</span>
-                                </button>
-                            </li>
-                            {/* Mock History */}
-                            <li>
-                                <div className="nav-section-title" style={{padding: '10px 15px', fontSize: '0.8em', color: '#888'}}>Today</div>
-                            </li>
-                            <li>
-                                <button className="nav-link" style={{background: 'transparent', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', color: '#ccc'}}>
-                                    <MessageSquare size={18} />
-                                    <span style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>Create Tech Club</span>
-                                </button>
-                            </li>
-                             <li>
-                                <button className="nav-link" style={{background: 'transparent', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', color: '#ccc'}}>
-                                    <MessageSquare size={18} />
-                                    <span style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>Upcoming Events</span>
-                                </button>
-                            </li>
-                        </ul>
-                    ) : (
                     <ul className="nav-list">
                         <li>
                             <NavLink to={dashboardLink} onClick={onClose} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -121,6 +59,12 @@ const Sidebar = ({ isOpen, onClose, user, onBecomeCreator, mode = 'standard', on
                             <NavLink to="/events" onClick={onClose} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                 <Calendar size={20} />
                                 <span>Events</span>
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink to="/chat" onClick={onClose} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <MessageSquare size={20} />
+                                <span>AI Assistant</span>
                             </NavLink>
                         </li>
                         <li>
@@ -153,7 +97,6 @@ const Sidebar = ({ isOpen, onClose, user, onBecomeCreator, mode = 'standard', on
                             </li>
                         )}
                     </ul>
-                    )}
                 </nav>
 
                 <div className="sidebar-footer">

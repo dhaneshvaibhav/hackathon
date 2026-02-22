@@ -36,7 +36,7 @@ const EventDetails = () => {
 
     if (error) return (
         <div className="dashboard-page">
-            <main className="container" style={{ padding: '3rem 2rem' }}>
+            <main className="container">
                 <button 
                     onClick={() => navigate(-1)}
                     className="btn-secondary"
@@ -92,7 +92,7 @@ const EventDetails = () => {
 
                 <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
                     {event.poster_url && (
-                        <div style={{ height: '400px', width: '100%', overflow: 'hidden', position: 'relative' }}>
+                        <div className="details-image-container">
                             <img 
                                 src={event.poster_url} 
                                 alt={event.title} 
@@ -181,7 +181,7 @@ const EventDetails = () => {
                             </div>
                         )}
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem', padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                        <div className="info-grid">
                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
                                 <div style={{ padding: '0.5rem', backgroundColor: '#e0f2fe', borderRadius: '8px', color: '#0284c7' }}>
                                     <Calendar size={24} />

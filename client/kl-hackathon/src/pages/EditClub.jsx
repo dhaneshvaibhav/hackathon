@@ -224,7 +224,7 @@ const EditClub = () => {
                         {/* Logo Upload Section */}
                         <div style={{ marginBottom: '2rem' }}>
                             <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600', color: 'var(--text-main)' }}>Club Logo</label>
-                            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+                            <div className="flex-stack-mobile">
                                 <div style={{ 
                                     width: '120px', 
                                     height: '120px', 
@@ -281,7 +281,7 @@ const EditClub = () => {
                             </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                        <div className="form-grid">
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--text-main)' }}>Club Name</label>
                                 <input

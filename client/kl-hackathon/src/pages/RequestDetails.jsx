@@ -182,7 +182,7 @@ const RequestDetails = () => {
                         Request Details
                     </h1>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                    <div className="dashboard-content-grid">
                         <div>
                             <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--text-muted)' }}>User Information</h2>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>

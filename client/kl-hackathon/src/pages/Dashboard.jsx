@@ -136,7 +136,7 @@ const Dashboard = () => {
     if (searchQuery) {
         return (
             <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh' }}>
-                <main className="container" style={{ padding: '3rem 2rem' }}>
+                <main className="container">
                     <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>
                         Search Results for "{searchQuery}"
                     </h2>
@@ -152,7 +152,7 @@ const Dashboard = () => {
                                     No clubs found matching your search.
                                 </div>
                             ) : (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                                <div className="responsive-grid">
                                     {filteredClubs.map(club => (
                                         <div key={club.id} style={{ 
                                             backgroundColor: 'white', 
@@ -319,7 +319,7 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-page" style={{ backgroundColor: 'var(--bg-secondary)', minHeight: '100vh', overflowX: 'hidden' }}>
-            <main className="container" style={{ padding: '3rem 2rem', maxWidth: '100%', overflowX: 'hidden' }}>
+            <main className="container" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
                 <div style={{ marginBottom: '3rem', width: '100%' }}>
                     {/* Events Carousel */}
                     <div style={{ marginBottom: '2.5rem' }}>

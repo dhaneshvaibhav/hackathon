@@ -72,6 +72,16 @@ button {
   padding: 5rem 0;
 }
 
+@media (max-width: 480px) {
+  .container {
+    padding: 0 1rem;
+  }
+  
+  .section {
+    padding: 3rem 0;
+  }
+}
+
 /* Components Base */
 .btn {
   display: inline-block;
