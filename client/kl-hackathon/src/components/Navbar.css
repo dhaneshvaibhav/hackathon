@@ -29,6 +29,20 @@
     font-weight: bold;
 }
 
+.nav-menu {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    text-align: center;
+    gap: 20px;
+}
+
+.nav-item {
+    height: 80px;
+    display: flex;
+    align-items: center;
+}
+
 .menu-icon {
     display: none;
     font-size: 1.8rem;
@@ -86,12 +100,6 @@
         color: white;
         border-radius: 0;
     }
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    height: 80px;
 }
 
 .nav-links {
