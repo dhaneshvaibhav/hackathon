@@ -90,6 +90,7 @@ button {
 
 .btn-primary:hover {
   background-color: var(--primary-light);
+  color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -102,6 +103,7 @@ button {
 
 .btn-accent:hover {
   background-color: var(--accent-light);
+  color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }

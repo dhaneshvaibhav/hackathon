@@ -84,6 +84,7 @@
 
 .nav-links-btn:hover {
     background-color: var(--accent-light);
+    color: white;
     transform: translateY(-2px);
 }
 
