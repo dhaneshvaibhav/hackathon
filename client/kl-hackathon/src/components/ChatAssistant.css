@@ -115,6 +115,11 @@
     background-color: #646cff;
     color: white;
     cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.chat-input-area button:hover:not(:disabled) {
+    background-color: #535bf2;
 }
 
 .chat-input-area button:disabled {

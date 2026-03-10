@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Hero.css';
 
 const Hero = () => {
@@ -11,8 +12,8 @@ const Hero = () => {
                     Whether it's tech, culture, or sports, find your community today.
                 </p>
                 <div className="hero-cta">
-                    <button className="btn btn-primary btn-large">Explore Clubs</button>
-                    <button className="btn btn-outline btn-large">Learn More</button>
+                    <Link to="/clubs" className="btn btn-primary btn-large">Explore Clubs</Link>
+                    <a href="#about" className="btn btn-outline btn-large">Learn More</a>
                 </div>
             </div>
             <div className="hero-background"></div>

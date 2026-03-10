@@ -149,7 +149,8 @@
 }
 
 .btn-primary:hover {
-    background-color: var(--primary-dark);
+    background-color: var(--primary-light);
+    color: white;
 }
 
 .btn-secondary {

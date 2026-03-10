@@ -29,6 +29,20 @@
     font-weight: bold;
 }
 
+.nav-menu {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    text-align: center;
+    gap: 20px;
+}
+
+.nav-item {
+    height: 80px;
+    display: flex;
+    align-items: center;
+}
+
 .menu-icon {
     display: none;
     font-size: 1.8rem;
@@ -88,12 +102,6 @@
     }
 }
 
-.nav-item {
-    display: flex;
-    align-items: center;
-    height: 80px;
-}
-
 .nav-links {
     color: white;
     text-decoration: none;
@@ -130,6 +138,7 @@
 
 .nav-links-btn:hover {
     background-color: var(--accent-light);
+    color: white;
     transform: translateY(-2px);
 }
 
